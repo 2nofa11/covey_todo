@@ -6,21 +6,49 @@
 
 ## 技術スタック
 
-- **フロントエンド**: 単一HTML（index.html）
-- **CSS**: Tailwind CSS（CDN版）
-- **JavaScript**: Vanilla JS（フレームワーク不使用）
-- **データ保存**: LocalStorage
-- **フォント**: Google Fonts（Noto Sans JP + Inter）
+- **フロントエンド**: Vue 3 + TypeScript
+- **CSS**: Tailwind CSS v4
+- **状態管理**: Pinia + Pinia Colada
+- **ビルドツール**: Vite
+- **テスト**: Vitest + @testing-library/vue
+- **リント**: ESLint (@antfu/eslint-config)
+- **データ保存**: LocalStorage (VueUseのuseLocalStorage使用)
+- **ユーティリティ**: VueUse
 
 ## アプリケーション構造
 
 ### 📁 ファイル構成
 ```
 covey_todo/
-├── index.html          # メインアプリケーション
+├── frontend/                    # Vue.js アプリケーション
+│   ├── src/
+│   │   ├── App.vue             # ルートコンポーネント
+│   │   ├── main.ts            # エントリーポイント
+│   │   ├── components/
+│   │   │   └── ui/            # UIコンポーネント
+│   │   │       ├── BaseModal.vue
+│   │   │       └── TaskCard.vue
+│   │   ├── pages/
+│   │   │   └── Home.vue       # メインページ
+│   │   ├── stores/            # Piniaストア
+│   │   │   ├── useTodoStore.ts
+│   │   │   ├── useBigRocksStore.ts
+│   │   │   └── useUIStore.ts
+│   │   ├── composables/       # コンポーザブル関数
+│   │   │   ├── useKeyboardShortcuts.ts
+│   │   │   ├── useTaskFilters.ts
+│   │   │   └── useTaskStats.ts
+│   │   ├── types/
+│   │   │   └── index.ts       # 型定義
+│   │   └── test/
+│   │       └── setup.ts       # テストセットアップ
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── vitest.config.ts
+│   └── CLAUDE.md              # フロントエンド専用ガイド
 ├── docs/
-│   └── require.md      # 要件定義書
-└── CLAUDE.md          # このファイル
+│   └── require.md             # 要件定義書
+└── CLAUDE.md                  # このファイル
 ```
 
 ### 🎨 カラーパレット（Retro Girl）
@@ -28,56 +56,6 @@ covey_todo/
 - **Bisque**: #FFE7C6 - 背景色
 - **Caramel**: #F6D19A - 緊急のみタスク
 - **Iceberg**: #74B8CE - 重要のみタスク
-
-## 主要機能
-
-### 1. 4つのクアドラント
-- **今すぐやる** (Do) - 重要 & 緊急
-- **計画する** (Plan) - 重要のみ
-- **人に任せる** (Delegate) - 緊急のみ
-- **やらない** (Eliminate) - どちらでもない
-
-### 2. コア機能
-- ✅ クイックキャプチャ（N キーまたは＋ボタン）
-- ✅ 今日ビュー（重要・緊急タスクを集約）
-- ✅ 週次最重要事項（Big Rocks）設定
-- ✅ 週次レビュー（金曜日17:00）
-- ✅ インタラクティブオンボーディング
-
-### 3. 日本語最適化
-- ✅ Noto Sans JP フォント使用
-- ✅ 行間1.7倍（和英混在対応）
-- ✅ 丁寧語統一（です・ます調）
-- ✅ 英語併記での説明
-- ✅ 日本のビジネス文化対応
-
-## 開発メモ
-
-### 🚀 起動方法
-HTML ファイルを直接ブラウザで開くだけで動作します。サーバー不要。
-
-### 🛠️ カスタマイズポイント
-1. **色の変更**: tailwind.config 内の colors セクション
-2. **フォント調整**: fontFamily セクション
-3. **レイアウト**: lineHeight, letterSpacing セクション
-
-### ⚠️ 注意事項
-- LocalStorage使用のため、ブラウザデータ削除で全データ消失
-- 週次レビューは `isDevelopment = true` で無効化中
-- デモデータは本番では削除推奨
-
-### 🎯 今後の改善案
-- サーバーサイド同期機能
-- モバイルアプリ化
-- チーム機能追加
-- 詳細レポート機能
-- エクスポート/インポート機能
-
-### 📝 キーボードショートカット
-- **N**: 新しいタスク追加
-- **I**: 重要度切り替え（週間ビュー）
-- **U**: 緊急度切り替え（週間ビュー）
-- **Escape**: モーダル閉じる
 
 
 ---
