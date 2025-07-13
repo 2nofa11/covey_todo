@@ -10,6 +10,7 @@ EXAMPLE: A modern and fast (rolldown + oxc based) Vue 3 starter template with Ty
 - Patterns: ALWAYS use Composition API + `<script setup>`, NEVER use Options API
 - ALWAYS Keep types alongside your code, use TypeScript for type safety, prefer `interface` over `type` for defining types
 - Keep unit and integration tests alongside the file they test: `src/ui/Button.vue` + `src/ui/Button.spec.ts`
+- ALWAYS use @src/test/setup.ts for mocking
 - ALWAYS use TailwindCSS classes rather than manual CSS
 - **ALWAYS consider using VueUse utilities first** before implementing custom composables (useLocalStorage, useDark, useToggle, useEventListener, etc.)
 - DO NOT hard code colors, use Tailwind's color system
@@ -95,6 +96,7 @@ Using **Vitest** for fast unit and integration testing:
 ### Coverage Configuration
 
 Vitest coverage is configured with V8 provider and excludes:
+
 - Configuration files (`**/*.config.*`)
 - Documentation files (`**/CLAUDE.md`)
 - Type definition files (`**/*.d.ts`)
