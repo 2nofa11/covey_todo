@@ -11,9 +11,6 @@ const captureUrgent = ref(false)
 const currentOnboardingStep = ref(1)
 
 // モーダル表示状態
-const showQuickCaptureModal = ref(false)
-const showBigRocksModal = ref(false)
-const showOnboardingModal = ref(false)
 const showWeeklyReviewModal = ref(false)
 
 // フォーム入力
@@ -220,14 +217,15 @@ function deleteTask(taskId: number) {
 // フォーカストラップ機能
 function trapFocus(dialog: HTMLDialogElement) {
   focusableElements.value = dialog.querySelectorAll(
-    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
   )
-  
-  if (focusableElements.value.length === 0) return
-  
+
+  if (focusableElements.value.length === 0)
+    return
+
   const firstElement = focusableElements.value[0]
   const lastElement = focusableElements.value[focusableElements.value.length - 1]
-  
+
   function handleTabKey(e: KeyboardEvent) {
     if (e.key === 'Tab') {
       if (e.shiftKey) {
@@ -235,7 +233,8 @@ function trapFocus(dialog: HTMLDialogElement) {
           e.preventDefault()
           lastElement.focus()
         }
-      } else {
+      }
+      else {
         if (document.activeElement === lastElement) {
           e.preventDefault()
           firstElement.focus()
@@ -243,9 +242,9 @@ function trapFocus(dialog: HTMLDialogElement) {
       }
     }
   }
-  
+
   dialog.addEventListener('keydown', handleTabKey)
-  
+
   // クリーンアップ関数を返す
   return () => {
     dialog.removeEventListener('keydown', handleTabKey)
@@ -257,10 +256,10 @@ function openQuickCapture() {
   if (quickCaptureDialog.value) {
     // 現在のフォーカス要素を保存
     previousFocusElement.value = document.activeElement as HTMLElement
-    
+
     quickCaptureDialog.value.showModal()
     trapFocus(quickCaptureDialog.value)
-    
+
     nextTick(() => {
       const input = document.getElementById('taskInput') as HTMLInputElement
       if (input)
@@ -275,7 +274,7 @@ function closeQuickCapture() {
   }
   taskInput.value = ''
   resetCaptureState()
-  
+
   // フォーカスを元の位置に戻す
   if (previousFocusElement.value) {
     previousFocusElement.value.focus()
@@ -331,10 +330,10 @@ function openBigRocks() {
   if (bigRocksDialog.value) {
     // 現在のフォーカス要素を保存
     previousFocusElement.value = document.activeElement as HTMLElement
-    
+
     bigRocksDialog.value.showModal()
     trapFocus(bigRocksDialog.value)
-    
+
     nextTick(() => {
       const firstInput = bigRocksDialog.value?.querySelector('input') as HTMLInputElement
       if (firstInput)
@@ -347,7 +346,7 @@ function closeBigRocks() {
   if (bigRocksDialog.value) {
     bigRocksDialog.value.close()
   }
-  
+
   // フォーカスを元の位置に戻す
   if (previousFocusElement.value) {
     previousFocusElement.value.focus()
@@ -384,10 +383,10 @@ function showOnboarding() {
   if (onboardingDialog.value) {
     // 現在のフォーカス要素を保存
     previousFocusElement.value = document.activeElement as HTMLElement
-    
+
     onboardingDialog.value.showModal()
     trapFocus(onboardingDialog.value)
-    
+
     nextTick(() => {
       const firstButton = onboardingDialog.value?.querySelector('button') as HTMLButtonElement
       if (firstButton)
@@ -425,7 +424,7 @@ function finishOnboarding() {
   if (onboardingDialog.value) {
     onboardingDialog.value.close()
   }
-  
+
   // フォーカスを元の位置に戻す
   if (previousFocusElement.value) {
     previousFocusElement.value.focus()
@@ -515,102 +514,13 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* ダイアログの背景を半透明に設定 */
-dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(2px);
-}
-
-/* フォールバック用（古いブラウザ対応） */
-dialog[open] {
-  animation: modal-appear 0.2s ease-out;
-}
-
-@keyframes modal-appear {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* スクリーンリーダー専用テキスト */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* 高コントラストモード対応 */
-@media (prefers-contrast: high) {
-  .text-gray-500 {
-    color: #1f2937 !important;
-  }
-  .text-gray-600 {
-    color: #1f2937 !important;
-  }
-  .bg-gray-100 {
-    background-color: #f3f4f6 !important;
-    border: 1px solid #374151 !important;
-  }
-}
-
-/* 縮小モーション設定対応 */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  
-  dialog[open] {
-    animation: none;
-  }
-}
-
-/* フォーカス表示の強化 */
-button:focus,
-input:focus,
-select:focus,
-textarea:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-/* Skip link スタイル */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 6px;
-  background: #000;
-  color: white;
-  padding: 8px;
-  text-decoration: none;
-  z-index: 1000;
-}
-
-.skip-link:focus {
-  top: 6px;
-}
-</style>
-
 <template>
   <div class="bg-white min-h-screen font-sans leading-relaxed-jp tracking-jp">
     <!-- Skip Link -->
     <a href="#main-content" class="skip-link">
       メインコンテンツにスキップ
     </a>
-    
+
     <!-- スクリーンリーダー用の状態通知領域 -->
     <div id="status-announcements" aria-live="polite" aria-atomic="true" class="sr-only">
       {{ statusMessage }}
@@ -1437,3 +1347,92 @@ textarea:focus {
     </dialog>
   </div>
 </template>
+
+<style scoped>
+/* ダイアログの背景を半透明に設定 */
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+}
+
+/* フォールバック用（古いブラウザ対応） */
+dialog[open] {
+  animation: modal-appear 0.2s ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* スクリーンリーダー専用テキスト */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 高コントラストモード対応 */
+@media (prefers-contrast: high) {
+  .text-gray-500 {
+    color: #1f2937 !important;
+  }
+  .text-gray-600 {
+    color: #1f2937 !important;
+  }
+  .bg-gray-100 {
+    background-color: #f3f4f6 !important;
+    border: 1px solid #374151 !important;
+  }
+}
+
+/* 縮小モーション設定対応 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  dialog[open] {
+    animation: none;
+  }
+}
+
+/* フォーカス表示の強化 */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Skip link スタイル */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+</style>
