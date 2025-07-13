@@ -1,4 +1,4 @@
-import { render, fireEvent } from '@testing-library/vue'
+import { fireEvent, render } from '@testing-library/vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import ModalContainer from './ModalContainer.vue'
@@ -98,11 +98,11 @@ describe('modalContainer', () => {
     mockModalState.isOpen = true
 
     const { getByTestId } = render(ModalContainer)
-    
+
     // BaseModalをクリックしてhandleCloseを発火
     const baseModal = getByTestId('base-modal')
     await fireEvent.click(baseModal)
-    
+
     expect(mockClose).toHaveBeenCalled()
   })
 
@@ -111,11 +111,11 @@ describe('modalContainer', () => {
     mockModalState.isOpen = true
 
     const { getByTestId } = render(ModalContainer)
-    
+
     // BaseModalをクリックしてcloseイベントを発火
     const baseModal = getByTestId('base-modal')
     await fireEvent.click(baseModal)
-    
+
     // handleClose関数が呼ばれてmockCloseが実行される
     expect(mockClose).toHaveBeenCalled()
   })

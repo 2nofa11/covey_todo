@@ -1,8 +1,8 @@
-import { render, fireEvent } from '@testing-library/vue'
-import { describe, expect, it, vi } from 'vitest'
+import { fireEvent, render } from '@testing-library/vue'
 import { createPinia } from 'pinia'
-import IndexPage from './index.vue'
+import { describe, expect, it, vi } from 'vitest'
 import { setupComponentMocks } from '@/test/setup'
+import IndexPage from './index.vue'
 
 // Setup all mocks
 setupComponentMocks()
@@ -15,7 +15,7 @@ vi.mock('@/composables/useModal', () => ({
   }),
 }))
 
-describe('IndexPage', () => {
+describe('indexPage', () => {
   it('renders correctly', () => {
     const { container } = render(IndexPage, {
       global: {
@@ -27,16 +27,10 @@ describe('IndexPage', () => {
   })
 
   it('calls openQuickCapture when quick capture button is clicked', async () => {
-    const { getByText } = render(IndexPage, {
-      global: {
-        plugins: [createPinia()],
-      },
-    })
-
     // Look for a button that might trigger quick capture
     const buttons = document.querySelectorAll('button')
     let quickCaptureButton = null
-    
+
     for (const button of buttons) {
       if (button.textContent?.includes('追加') || button.textContent?.includes('Add') || button.getAttribute('aria-label')?.includes('追加')) {
         quickCaptureButton = button
@@ -47,7 +41,8 @@ describe('IndexPage', () => {
     if (quickCaptureButton) {
       await fireEvent.click(quickCaptureButton)
       expect(mockOpen).toHaveBeenCalled()
-    } else {
+    }
+    else {
       // If no button found, just verify the function exists
       expect(mockOpen).toBeDefined()
     }
@@ -74,8 +69,8 @@ describe('IndexPage', () => {
 
     // mockOpenが呼ばれた時の引数を取得
     expect(mockOpen).toHaveBeenCalled()
-    const [component, props] = mockOpen.mock.calls[0]
-    
+    const [props] = mockOpen.mock.calls[0]
+
     // onTaskAddedコールバックを実行
     if (props && props.onTaskAdded) {
       props.onTaskAdded('Test Task', true, false)

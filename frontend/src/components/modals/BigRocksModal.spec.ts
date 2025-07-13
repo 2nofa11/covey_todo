@@ -1,13 +1,13 @@
-import { render, fireEvent } from '@testing-library/vue'
-import { describe, expect, it } from 'vitest'
+import { fireEvent, render } from '@testing-library/vue'
 import { createPinia } from 'pinia'
-import BigRocksModal from './BigRocksModal.vue'
+import { describe, expect, it } from 'vitest'
 import { setupComponentMocks } from '@/test/setup'
+import BigRocksModal from './BigRocksModal.vue'
 
 // Setup all mocks
 setupComponentMocks()
 
-describe('BigRocksModal', () => {
+describe('bigRocksModal', () => {
   const defaultProps = {
     modelValue: true,
     onBigRocksUpdated: vi.fn(),

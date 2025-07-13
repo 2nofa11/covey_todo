@@ -1,9 +1,9 @@
 import { render } from '@testing-library/vue'
-import { describe, expect, it, vi } from 'vitest'
 import { createPinia } from 'pinia'
+import { describe, expect, it, vi } from 'vitest'
 import { createRouter, createWebHistory } from 'vue-router'
-import AppLayout from './AppLayout.vue'
 import { setupComponentMocks } from '@/test/setup'
+import AppLayout from './AppLayout.vue'
 
 // Setup all mocks
 setupComponentMocks()
@@ -42,14 +42,14 @@ const router = createRouter({
   routes,
 })
 
-describe('AppLayout', () => {
+describe('appLayout', () => {
   it('renders correctly', () => {
     const { container } = render(AppLayout, {
       global: {
         plugins: [createPinia(), router],
       },
     })
-    
+
     expect(container).toBeTruthy()
   })
 
@@ -72,11 +72,11 @@ describe('AppLayout', () => {
 
     // modalOpenが呼ばれることを確認
     expect(mockModalOpen).toHaveBeenCalled()
-    
+
     // 呼び出された引数を確認
     const calls = mockModalOpen.mock.calls
     expect(calls.length).toBeGreaterThan(0)
-    
+
     // 各呼び出しでモーダルコンポーネントとプロップスが渡されることを確認
     calls.forEach(([component, props]) => {
       expect(component).toBeDefined()
@@ -93,27 +93,27 @@ describe('AppLayout', () => {
 
     // modalOpenの各呼び出しのコールバックを実行してテスト
     const calls = mockModalOpen.mock.calls
-    
-    calls.forEach(([component, props]) => {
+
+    calls.forEach(([props]) => {
       if (props) {
         // onTaskAddedコールバックがある場合
         if (props.onTaskAdded) {
           props.onTaskAdded('Test Task', true, false)
           expect(typeof props.onTaskAdded).toBe('function')
         }
-        
+
         // onBigRocksUpdatedコールバックがある場合
         if (props.onBigRocksUpdated) {
           props.onBigRocksUpdated({ work: ['test'] })
           expect(typeof props.onBigRocksUpdated).toBe('function')
         }
-        
+
         // onTutorialTaskAddedコールバックがある場合
         if (props.onTutorialTaskAdded) {
           props.onTutorialTaskAdded('Tutorial Task')
           expect(typeof props.onTutorialTaskAdded).toBe('function')
         }
-        
+
         // onOnboardingCompletedコールバックがある場合
         if (props.onOnboardingCompleted) {
           props.onOnboardingCompleted()

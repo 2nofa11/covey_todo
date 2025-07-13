@@ -305,13 +305,13 @@ describe('useKeyboardShortcuts', () => {
 
     // Execute the quadrant callbacks (callbacks 2-5 are for _1-_4)
     callbacks[2]() // _1 callback
-    callbacks[3]() // _2 callback  
+    callbacks[3]() // _2 callback
     callbacks[4]() // _3 callback
     callbacks[5]() // _4 callback
 
     expect(mockUiStore.switchQuadrant).toHaveBeenCalledWith('do')
     expect(mockUiStore.switchQuadrant).toHaveBeenCalledWith('plan')
-    expect(mockUiStore.switchQuadrant).toHaveBeenCalledWith('delegate') 
+    expect(mockUiStore.switchQuadrant).toHaveBeenCalledWith('delegate')
     expect(mockUiStore.switchQuadrant).toHaveBeenCalledWith('eliminate')
   })
 
@@ -330,7 +330,7 @@ describe('useKeyboardShortcuts', () => {
 
     // Execute the quadrant callbacks (callbacks 2-5 are for _1-_4)
     callbacks[2]() // _1 callback
-    callbacks[3]() // _2 callback  
+    callbacks[3]() // _2 callback
     callbacks[4]() // _3 callback
     callbacks[5]() // _4 callback
 

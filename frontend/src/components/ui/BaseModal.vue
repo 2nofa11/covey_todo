@@ -78,7 +78,8 @@ function openModal() {
 }
 
 function closeModal(force = false) {
-  if (!force && !props.modelValue) return
+  if (!force && !props.modelValue)
+    return
 
   if (dialogRef.value) {
     dialogRef.value.close()

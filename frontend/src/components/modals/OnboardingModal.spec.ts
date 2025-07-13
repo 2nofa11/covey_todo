@@ -1,13 +1,13 @@
-import { render, fireEvent } from '@testing-library/vue'
-import { describe, expect, it } from 'vitest'
+import { fireEvent, render } from '@testing-library/vue'
 import { createPinia } from 'pinia'
-import OnboardingModal from './OnboardingModal.vue'
+import { describe, expect, it } from 'vitest'
 import { setupComponentMocks } from '@/test/setup'
+import OnboardingModal from './OnboardingModal.vue'
 
 // Setup all mocks
 setupComponentMocks()
 
-describe('OnboardingModal', () => {
+describe('onboardingModal', () => {
   const defaultProps = {
     modelValue: true,
     onTutorialTaskAdded: vi.fn(),

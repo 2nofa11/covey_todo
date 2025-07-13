@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/vue'
-import { describe, expect, it, vi } from 'vitest'
 import { createPinia } from 'pinia'
-import App from './App.vue'
+import { describe, expect, it, vi } from 'vitest'
 import { setupComponentMocks } from '@/test/setup'
+import App from './App.vue'
 
 // Setup all mocks
 setupComponentMocks()

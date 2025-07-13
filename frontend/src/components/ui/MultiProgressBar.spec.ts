@@ -2,7 +2,7 @@ import { render } from '@testing-library/vue'
 import { describe, expect, it } from 'vitest'
 import MultiProgressBar from './MultiProgressBar.vue'
 
-describe('MultiProgressBar', () => {
+describe('multiProgressBar', () => {
   it('renders with basic segments', () => {
     const segments = [
       { value: 30, color: 'bg-tomato', label: 'Urgent & Important' },
