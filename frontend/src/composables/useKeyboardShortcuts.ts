@@ -5,7 +5,7 @@ export function useKeyboardShortcuts() {
   const uiStore = useUIStore()
 
   // VueUseのuseMagicKeysで宣言的にキーボードショートカットを定義
-  const { n, escape, t, w, _1, _2, _3, _4 } = useMagicKeys({
+  const { t, w, _1, _2, _3, _4 } = useMagicKeys({
     passive: false,
     onEventFired(e) {
       // 入力フィールドでは一部のショートカットを無効化
@@ -17,7 +17,7 @@ export function useKeyboardShortcuts() {
       }
 
       // 定義されているショートカットキーのみpreventDefaultを実行
-      const definedKeys = ['n', 'escape', 't', 'w', '1', '2', '3', '4']
+      const definedKeys = ['t', 'w', '1', '2', '3', '4']
       if (definedKeys.includes(e.key.toLowerCase())) {
         e.preventDefault()
       }
@@ -25,13 +25,14 @@ export function useKeyboardShortcuts() {
   })
 
   // ショートカットの動作を定義
-  whenever(n, () => {
-    uiStore.toggleQuickCapture(true)
-  })
+  // NOTE: nキーとescapeキーはモーダル関連機能が削除されたため無効化
+  // whenever(n, () => {
+  //   uiStore.toggleQuickCapture(true)
+  // })
 
-  whenever(escape, () => {
-    uiStore.closeAllModals()
-  })
+  // whenever(escape, () => {
+  //   uiStore.closeAllModals()
+  // })
 
   whenever(t, () => {
     uiStore.switchToTodayView()
@@ -68,6 +69,6 @@ export function useKeyboardShortcuts() {
 
   return {
     // 必要に応じてキーの状態を返すことも可能
-    keys: { n, escape, t, w, _1, _2, _3, _4 },
+    keys: { t, w, _1, _2, _3, _4 },
   }
 }

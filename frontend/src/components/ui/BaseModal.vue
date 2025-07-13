@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 
 interface Props {
   modelValue: boolean
@@ -10,7 +10,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
-  maxWidth: 'max-w-lg',
+  maxWidth: 'max-w-2xl',
 })
 
 const emit = defineEmits<{
@@ -46,6 +46,13 @@ watch(() => props.modelValue, (newValue) => {
   }
   else {
     closeModal()
+  }
+}, { immediate: true })
+
+// マウント時に初期状態を確認
+onMounted(() => {
+  if (props.modelValue) {
+    nextTick(() => openModal())
   }
 })
 

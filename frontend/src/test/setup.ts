@@ -23,6 +23,17 @@ export function mockComposables() {
         completedToday: 0,
         highPriority: 0,
       },
+      quadrantRatios: {
+        do: 0,
+        plan: 0,
+        delegate: 0,
+        eliminate: 0,
+      },
+      completionRatios: {
+        today: 0,
+        week: 0,
+        quadrant2: 0,
+      },
     })),
   }))
 }
@@ -52,6 +63,12 @@ export function mockStores() {
     useUIStore: vi.fn(() => ({
       currentView: 'today',
       currentQuadrant: 'do',
+      statusMessage: '',
+      switchToTodayView: vi.fn(),
+      switchToWeekView: vi.fn(),
+      switchQuadrant: vi.fn(),
+      announceStatus: vi.fn(),
+      // 下位互換性のために削除されたプロパティもモックとして提供
       showQuickCapture: false,
       showBigRocks: false,
       showOnboarding: false,
@@ -59,19 +76,15 @@ export function mockStores() {
       tutorialTaskInput: '',
       captureImportant: false,
       captureUrgent: false,
-      statusMessage: '',
       currentOnboardingStep: 1,
-      switchToTodayView: vi.fn(),
-      switchToWeekView: vi.fn(),
-      switchQuadrant: vi.fn(),
       toggleQuickCapture: vi.fn(),
       toggleBigRocks: vi.fn(),
       toggleOnboarding: vi.fn(),
       resetCaptureState: vi.fn(),
-      announceStatus: vi.fn(),
       nextOnboardingStep: vi.fn(),
       prevOnboardingStep: vi.fn(),
       resetOnboarding: vi.fn(),
+      closeAllModals: vi.fn(),
     })),
   }))
 }

@@ -1,7 +1,7 @@
+import type { Task } from '@/types'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useTodoStore } from './useTodoStore'
-import type { Task } from '@/types'
 
 // VueUseのuseLocalStorageをモック - 実際のref動作を模倣
 const mockTasks = vi.fn(() => [] as Task[])
