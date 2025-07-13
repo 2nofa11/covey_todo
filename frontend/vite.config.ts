@@ -4,6 +4,7 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/covey_todo/',
   plugins: [vue(), tailwindcss()],
   resolve: {
     alias: {
