@@ -98,7 +98,7 @@
         </div>
         
         <!-- Quadrant Navigation -->
-        <nav class="mb-8">
+        <nav id="quadrantNavigation" class="mb-8">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <button class="quadrant-tab active bg-quadrant-do text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-between" data-quadrant="do">
                     <div class="flex items-center space-x-2">
@@ -236,7 +236,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <button onclick="openQuickCapture()" class="bg-iceberg hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium">
+                            <button onclick="openQuickCapture()" class="bg-gradient-to-r from-tomato to-iceberg hover:from-red-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-200">
                                 ＋ 最初のタスクを追加
                             </button>
                         </div>
@@ -249,7 +249,7 @@
                 <!-- Big Rocks -->
                 <div class="bg-white rounded-lg shadow-md p-8 mb-8">
                     <div class="flex items-center justify-between mb-8">
-                        <h3 class="text-lg font-semibold text-gray-900">今週の重要な取り組み <span class="text-sm font-normal text-gray-600">(Big Rocks)</span></h3>
+                        <h3 class="text-lg font-semibold text-gray-900">最重要事項 <span class="text-sm font-normal text-gray-600">(Big Rocks)</span></h3>
                         <button id="bigRocksBtn" class="text-iceberg hover:text-blue-700">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
@@ -346,39 +346,39 @@
     <div id="bigRocksModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="bg-white rounded-lg p-6 w-full max-w-2xl border-2 border-caramel max-h-[90vh] overflow-y-auto">
-                <h3 class="text-xl font-semibold text-gray-900 mb-6">Weekly Big Rocks Planner</h3>
+                <h3 class="text-xl font-semibold text-gray-900 mb-6">週間最重要事項の設定 <span class="text-base font-normal text-gray-600">(Big Rocks Planner)</span></h3>
                 <form id="bigRocksForm">
                     <div class="space-y-6">
                         <div class="role-section">
-                            <h4 class="font-semibold text-iceberg mb-3">Work</h4>
+                            <h4 class="font-semibold text-iceberg mb-3">仕事 <span class="text-sm font-normal text-gray-600">(Work)</span></h4>
                             <div class="space-y-2">
-                                <input type="text" placeholder="Big Rock 1" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="work" data-index="0">
-                                <input type="text" placeholder="Big Rock 2" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="work" data-index="1">
-                                <input type="text" placeholder="Big Rock 3" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="work" data-index="2">
+                                <input type="text" placeholder="最重要事項 1" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="work" data-index="0">
+                                <input type="text" placeholder="最重要事項 2" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="work" data-index="1">
+                                <input type="text" placeholder="最重要事項 3" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="work" data-index="2">
                             </div>
                         </div>
                         <div class="role-section">
-                            <h4 class="font-semibold text-iceberg mb-3">Family</h4>
+                            <h4 class="font-semibold text-iceberg mb-3">家族 <span class="text-sm font-normal text-gray-600">(Family)</span></h4>
                             <div class="space-y-2">
-                                <input type="text" placeholder="Big Rock 1" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="family" data-index="0">
-                                <input type="text" placeholder="Big Rock 2" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="family" data-index="1">
-                                <input type="text" placeholder="Big Rock 3" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="family" data-index="2">
+                                <input type="text" placeholder="最重要事項 1" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="family" data-index="0">
+                                <input type="text" placeholder="最重要事項 2" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="family" data-index="1">
+                                <input type="text" placeholder="最重要事項 3" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="family" data-index="2">
                             </div>
                         </div>
                         <div class="role-section">
-                            <h4 class="font-semibold text-iceberg mb-3">Health</h4>
+                            <h4 class="font-semibold text-iceberg mb-3">健康 <span class="text-sm font-normal text-gray-600">(Health)</span></h4>
                             <div class="space-y-2">
-                                <input type="text" placeholder="Big Rock 1" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="health" data-index="0">
-                                <input type="text" placeholder="Big Rock 2" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="health" data-index="1">
-                                <input type="text" placeholder="Big Rock 3" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="health" data-index="2">
+                                <input type="text" placeholder="最重要事項 1" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="health" data-index="0">
+                                <input type="text" placeholder="最重要事項 2" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="health" data-index="1">
+                                <input type="text" placeholder="最重要事項 3" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="health" data-index="2">
                             </div>
                         </div>
                         <div class="role-section">
-                            <h4 class="font-semibold text-iceberg mb-3">Personal</h4>
+                            <h4 class="font-semibold text-iceberg mb-3">個人 <span class="text-sm font-normal text-gray-600">(Personal)</span></h4>
                             <div class="space-y-2">
-                                <input type="text" placeholder="Big Rock 1" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="personal" data-index="0">
-                                <input type="text" placeholder="Big Rock 2" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="personal" data-index="1">
-                                <input type="text" placeholder="Big Rock 3" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="personal" data-index="2">
+                                <input type="text" placeholder="最重要事項 1" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="personal" data-index="0">
+                                <input type="text" placeholder="最重要事項 2" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="personal" data-index="1">
+                                <input type="text" placeholder="最重要事項 3" class="big-rock-input w-full px-3 py-2 border border-gray-300 rounded-md" data-role="personal" data-index="2">
                             </div>
                         </div>
                     </div>
@@ -387,13 +387,13 @@
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                             </svg>
-                            <span>Cancel</span>
+                            <span>キャンセル</span>
                         </button>
                         <button type="submit" class="px-6 py-2 bg-iceberg hover:bg-blue-600 text-white rounded-lg font-medium flex items-center space-x-1">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"></path>
                             </svg>
-                            <span>Save Big Rocks</span>
+                            <span>最重要事項を保存</span>
                         </button>
                     </div>
                 </form>
@@ -890,7 +890,7 @@
                                 <span class="${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}">${task.title}</span>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <span class="px-2 py-1 text-xs rounded-full ${getQuadrantColor(getQuadrant(task.important, task.urgent))}">${getQuadrant(task.important, task.urgent).toUpperCase()}</span>
+                                <span class="px-2 py-1 text-xs rounded-full ${getQuadrantColor(getQuadrant(task.important, task.urgent))}">${getQuadrantLabel(getQuadrant(task.important, task.urgent))}</span>
                             </div>
                         </div>
                     </div>
@@ -977,6 +977,16 @@
             return colors[quadrant] || 'bg-gray-400 text-white';
         }
 
+        function getQuadrantLabel(quadrant) {
+            const labels = {
+                do: '緊急',
+                plan: '重要',
+                delegate: '委任',
+                eliminate: '削除'
+            };
+            return labels[quadrant] || '未分類';
+        }
+
         function updateEmptyState(quadrant) {
             const quadrantInfo = {
                 do: {
@@ -1043,6 +1053,9 @@
             document.getElementById('mobileWeekViewBtn').classList.remove('bg-iceberg', 'text-white');
             document.getElementById('mobileWeekViewBtn').classList.add('bg-gray-100', 'text-gray-700');
             
+            // Hide quadrant navigation in today view
+            document.getElementById('quadrantNavigation').classList.add('hidden');
+            
             renderTasks();
         }
 
@@ -1062,6 +1075,9 @@
             document.getElementById('mobileWeekViewBtn').classList.remove('bg-gray-100', 'text-gray-700');
             document.getElementById('mobiletodayViewBtn').classList.remove('bg-iceberg', 'text-white');
             document.getElementById('mobiletodayViewBtn').classList.add('bg-gray-100', 'text-gray-700');
+            
+            // Show quadrant navigation in week view
+            document.getElementById('quadrantNavigation').classList.remove('hidden');
             
             switchQuadrant('do');
         }
@@ -1148,7 +1164,7 @@
             });
             
             if (allRocks.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm">No big rocks set for this week.</p>';
+                container.innerHTML = '<p class="text-gray-500 text-sm">今週の最重要事項が設定されていません。</p>';
             } else {
                 container.innerHTML = allRocks.map(item => `
                     <div class="bg-gray-50 p-2 rounded border-l-4 border-iceberg">
