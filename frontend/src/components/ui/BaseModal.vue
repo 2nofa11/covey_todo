@@ -24,17 +24,18 @@ const previousFocusElement = ref<HTMLElement | null>(null)
 
 // フォーカス可能な要素を取得するヘルパー関数
 function getFocusableElements(): HTMLElement[] {
-  if (!dialogRef.value) return []
-  
+  if (!dialogRef.value)
+    return []
+
   const focusableSelectors = [
     'button:not([disabled])',
     '[href]',
     'input:not([disabled])',
     'select:not([disabled])',
     'textarea:not([disabled])',
-    '[tabindex]:not([tabindex="-1"]):not([disabled])'
+    '[tabindex]:not([tabindex="-1"]):not([disabled])',
   ].join(', ')
-  
+
   return Array.from(dialogRef.value.querySelectorAll(focusableSelectors)) as HTMLElement[]
 }
 
@@ -92,21 +93,24 @@ onKeyStroke('Escape', () => {
 
 // フォーカストラップ：Tab/Shift+Tabキーでのフォーカス管理
 onKeyStroke('Tab', (e) => {
-  if (!props.modelValue) return
-  
+  if (!props.modelValue)
+    return
+
   const focusableElements = getFocusableElements()
-  if (focusableElements.length === 0) return
-  
+  if (focusableElements.length === 0)
+    return
+
   const firstElement = focusableElements[0]
   const lastElement = focusableElements[focusableElements.length - 1]
-  
+
   if (e.shiftKey) {
     // Shift+Tab: 後方移動
     if (document.activeElement === firstElement) {
       e.preventDefault()
       lastElement.focus()
     }
-  } else {
+  }
+  else {
     // Tab: 前方移動
     if (document.activeElement === lastElement) {
       e.preventDefault()
