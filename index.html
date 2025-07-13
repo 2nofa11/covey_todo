@@ -45,10 +45,13 @@
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-caramel">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-4">
-                    <h1 class="text-2xl font-bold text-gray-900">Covey Todo<span class="text-lg font-normal text-gray-600 ml-2">重要度・緊急度マトリックス</span></h1>
-                    <div class="hidden md:flex space-x-2">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-6">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">Covey Todo</h1>
+                        <p class="text-sm text-gray-500 mt-1">重要度・緊急度マトリックス</p>
+                    </div>
+                    <div class="hidden md:flex space-x-4">
                         <button id="todayViewBtn" class="px-3 py-1 rounded-md bg-iceberg text-white font-medium flex items-center space-x-1">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
@@ -73,10 +76,30 @@
     </header>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Mobile View Toggle -->
+        <div class="md:hidden mb-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+                <div class="grid grid-cols-2 gap-1">
+                    <button id="mobiletodayViewBtn" class="mobile-view-toggle px-4 py-3 rounded-md font-medium text-sm flex items-center justify-center space-x-2 bg-iceberg text-white transition-all duration-200">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>今日</span>
+                    </button>
+                    <button id="mobileWeekViewBtn" class="mobile-view-toggle px-4 py-3 rounded-md font-medium text-sm flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 transition-all duration-200">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>週間</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
         <!-- Quadrant Navigation -->
-        <nav class="mb-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <nav class="mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <button class="quadrant-tab active bg-quadrant-do text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-between" data-quadrant="do">
                     <div class="flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -137,7 +160,7 @@
                 <!-- Today View -->
                 <div id="todayView" class="view-container">
                     <div class="bg-white rounded-lg shadow-md p-8 mb-8">
-                        <h2 class="text-xl font-bold text-gray-900 mb-6">今日の重点項目 <span class="text-base font-normal text-gray-600">(Today's Focus)</span></h2>
+                        <h2 class="text-xl font-bold text-gray-900 mb-8">今日の重点項目 <span class="text-base font-normal text-gray-600">(Today's Focus)</span></h2>
                         <div class="mb-4 bg-gray-100 rounded-lg p-3">
                             <div class="flex justify-between text-sm text-gray-600 mb-2">
                                 <span>第2領域の比率 <small class="text-xs">(重要・非緊急)</small></span>
@@ -181,7 +204,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button onclick="openQuickCapture()" class="bg-gradient-to-r from-tomato to-iceberg hover:from-red-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transform hover:scale-105 transition-all">
+                            <button onclick="openQuickCapture()" class="bg-gradient-to-r from-tomato to-iceberg hover:from-red-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-200"
                                 ＋ 最初のタスクを追加
                             </button>
                         </div>
@@ -191,9 +214,9 @@
                 <!-- Quadrant Views -->
                 <div id="quadrantView" class="view-container hidden">
                     <div class="bg-white rounded-lg shadow-md p-8">
-                        <h2 id="currentQuadrantTitle" class="text-xl font-bold text-gray-900 mb-8">Do - Important & Urgent</h2>
+                        <h2 id="currentQuadrantTitle" class="text-xl font-bold text-gray-900 mb-8">今すぐやる <span class="text-base font-normal text-gray-600">(Do - Important & Urgent)</span></h2>
                         <div id="taskList" class="space-y-3">
-                            <!-- Tasks will be populated here -->
+                            <!-- タスクがここに表示されます -->
                         </div>
                         <div id="emptyState" class="text-center py-12 text-gray-500 hidden">
                             <div class="mb-6">
@@ -202,8 +225,8 @@
                                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-lg font-medium text-gray-900 mb-2" id="emptyStateTitle">No tasks in this quadrant yet</h3>
-                                <p class="text-sm text-gray-600 mb-4" id="emptyStateDescription">This quadrant represents tasks that are...</p>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2" id="emptyStateTitle">この領域にはまだタスクがありません</h3>
+                                <p class="text-sm text-gray-600 mb-4" id="emptyStateDescription">この領域は重要かつ緊急なタスクを表します...</p>
                                 <div class="bg-blue-50 rounded-lg p-4 text-left">
                                     <h4 class="font-medium text-blue-900 mb-2">💡 この領域に適したタスク例：</h4>
                                     <ul class="text-sm text-blue-800 space-y-1" id="emptyStateExamples">
@@ -225,7 +248,7 @@
             <div class="lg:col-span-1">
                 <!-- Big Rocks -->
                 <div class="bg-white rounded-lg shadow-md p-8 mb-8">
-                    <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center justify-between mb-8">
                         <h3 class="text-lg font-semibold text-gray-900">今週の重要な取り組み <span class="text-sm font-normal text-gray-600">(Big Rocks)</span></h3>
                         <button id="bigRocksBtn" class="text-iceberg hover:text-blue-700">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -240,7 +263,7 @@
 
                 <!-- Quick Stats -->
                 <div class="bg-white rounded-lg shadow-md p-8">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-6">簡易統計 <span class="text-sm font-normal text-gray-600">(Quick Stats)</span></h3>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-8">簡易統計 <span class="text-sm font-normal text-gray-600">(Quick Stats)</span></h3>
                     <div class="space-y-4">
                         <div class="flex justify-between">
                             <span class="text-gray-600">全タスク数</span>
@@ -263,28 +286,28 @@
     <!-- Quick Capture Modal -->
     <div id="quickCaptureModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg p-6 w-full max-w-md border-2 border-caramel shadow-xl">
+            <div class="bg-white rounded-lg p-6 w-full max-w-lg border-2 border-caramel shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">新しいタスクを追加 <span class="text-sm font-normal text-gray-600">(Add New Task)</span></h3>
                 <form id="quickCaptureForm">
                     <input 
                         type="text" 
                         id="taskInput" 
                         placeholder="何をする必要がありますか？" 
-                        class="w-full px-4 py-3 border-2 border-iceberg rounded-lg focus:outline-none focus:ring-2 focus:ring-iceberg focus:border-transparent text-lg mb-4"
+                        class="w-full px-4 py-3 border-2 border-iceberg rounded-lg focus:outline-none focus:ring-2 focus:ring-iceberg focus:border-transparent text-lg mb-6"
                         autocomplete="off"
                     >
                     
                     <!-- Priority Selection -->
-                    <div class="mb-6">
+                    <div class="mb-8">
                         <p class="text-sm text-gray-600 mb-3">このタスクを分類しましょう：</p>
                         <div class="grid grid-cols-2 gap-3">
-                            <button type="button" id="importantToggle" class="priority-toggle flex items-center justify-center py-3 px-4 border-2 border-gray-200 rounded-lg hover:border-iceberg transition-colors">
+                            <button type="button" id="importantToggle" class="priority-toggle flex items-center justify-center py-3 px-4 border-2 border-gray-200 rounded-lg hover:border-iceberg transition-all duration-200">
                                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                 </svg>
                                 <span class="font-medium">重要</span>
                             </button>
-                            <button type="button" id="urgentToggle" class="priority-toggle flex items-center justify-center py-3 px-4 border-2 border-gray-200 rounded-lg hover:border-tomato transition-colors">
+                            <button type="button" id="urgentToggle" class="priority-toggle flex items-center justify-center py-3 px-4 border-2 border-gray-200 rounded-lg hover:border-tomato transition-all duration-200">
                                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                                 </svg>
@@ -516,7 +539,7 @@
                     </div>
                     
                     <div class="text-center">
-                        <button onclick="finishOnboarding()" class="bg-gradient-to-r from-tomato to-iceberg hover:from-red-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg">
+                        <button onclick="finishOnboarding()" class="bg-gradient-to-r from-tomato to-iceberg hover:from-red-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-200">
 さあ、生産性を向上させましょう！ 🚀
                         </button>
                     </div>
@@ -629,6 +652,10 @@
             // View switching
             document.getElementById('todayViewBtn').addEventListener('click', switchToTodayView);
             document.getElementById('weekViewBtn').addEventListener('click', switchToWeekView);
+            
+            // Mobile view switching
+            document.getElementById('mobiletodayViewBtn').addEventListener('click', switchToTodayView);
+            document.getElementById('mobileWeekViewBtn').addEventListener('click', switchToWeekView);
 
             // Quadrant tabs
             document.querySelectorAll('.quadrant-tab').forEach(tab => {
@@ -816,6 +843,9 @@
                 task.completed = !task.completed;
                 if (task.completed) {
                     task.completedAt = new Date().toISOString();
+                } else {
+                    // タスクを未完了に戻した時はcompletedAtをクリア
+                    delete task.completedAt;
                 }
                 saveData();
                 renderTasks();
@@ -851,7 +881,7 @@
             } else {
                 emptyState.classList.add('hidden');
                 container.innerHTML = todayTasks.map(task => `
-                    <div class="task-card bg-white border-l-4 border-${getQuadrant(task.important, task.urgent) === 'do' ? 'tomato' : 'iceberg'} p-4 rounded-lg shadow-sm">
+                    <div class="task-card bg-white border-l-4 border-${getQuadrant(task.important, task.urgent) === 'do' ? 'tomato' : 'iceberg'} p-6 rounded-xl shadow-sm">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
                                 <input type="checkbox" ${task.completed ? 'checked' : ''} 
@@ -890,7 +920,7 @@
             } else {
                 emptyState.classList.add('hidden');
                 container.innerHTML = quadrantTasks.map(task => `
-                    <div class="task-card bg-white border-2 border-gray-100 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="task-card bg-white border-2 border-gray-100 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center space-x-3">
                                 <input type="checkbox" ${task.completed ? 'checked' : ''} 
@@ -950,39 +980,39 @@
         function updateEmptyState(quadrant) {
             const quadrantInfo = {
                 do: {
-                    title: 'Important & Urgent Tasks',
-                    description: 'Crisis situations and deadline-driven projects that need immediate attention.',
+                    title: '重要 & 緊急なタスク',
+                    description: '危機的状況や期限主導のプロジェクトで、即座に対応が必要です。',
                     examples: [
-                        '• Fix critical bug before product launch',
-                        '• Submit tax return due tomorrow',
-                        '• Handle customer emergency complaint'
+                        '• プロダクトローンチ前の重大なバグ修正',
+                        '• 明日が期限の税務申告書提出',
+                        '• 顧客からの緊急クレーム対応'
                     ]
                 },
                 plan: {
-                    title: 'Important but Not Urgent Tasks',
-                    description: 'Strategic activities that prevent crises and build long-term success.',
+                    title: '重要だが緊急でないタスク',
+                    description: '危機を防ぎ、長期的な成功を築く戦略的な活動です。',
                     examples: [
-                        '• Learn new programming language',
-                        '• Plan quarterly team goals',
-                        '• Exercise and health maintenance'
+                        '• 新しいプログラミング言語の学習',
+                        '• 四半期チーム目標の策定',
+                        '• 運動と健康管理'
                     ]
                 },
                 delegate: {
-                    title: 'Urgent but Not Important Tasks',
-                    description: 'Activities that seem urgent but don\'t contribute to your key goals.',
+                    title: '緊急だが重要でないタスク',
+                    description: '緊急に見えるが、主要な目標に貢献しない活動です。',
                     examples: [
-                        '• Respond to non-critical emails',
-                        '• Attend optional meeting',
-                        '• Handle routine administrative tasks'
+                        '• 重要でないメールへの返信',
+                        '• 任意参加の会議への出席',
+                        '• 日常的な管理業務の処理'
                     ]
                 },
                 eliminate: {
-                    title: 'Neither Important nor Urgent',
-                    description: 'Time-wasting activities that should be minimized or eliminated.',
+                    title: '重要でも緊急でもないタスク',
+                    description: '最小限に抑えるか、排除すべき時間の無駄な活動です。',
                     examples: [
-                        '• Excessive social media browsing',
-                        '• Watching random YouTube videos',
-                        '• Organizing already organized items'
+                        '• 過度なSNS閲覧',
+                        'ランダムなYouTube動画視聴',
+                        '• 既に整理済みの物の再整理'
                     ]
                 }
             };
@@ -1000,10 +1030,19 @@
             currentView = 'today';
             document.getElementById('todayView').classList.remove('hidden');
             document.getElementById('quadrantView').classList.add('hidden');
+            
+            // Update desktop buttons
             document.getElementById('todayViewBtn').classList.add('bg-iceberg', 'text-white');
             document.getElementById('todayViewBtn').classList.remove('bg-gray-200', 'text-gray-700');
             document.getElementById('weekViewBtn').classList.remove('bg-iceberg', 'text-white');
             document.getElementById('weekViewBtn').classList.add('bg-gray-200', 'text-gray-700');
+            
+            // Update mobile buttons
+            document.getElementById('mobiletodayViewBtn').classList.add('bg-iceberg', 'text-white');
+            document.getElementById('mobiletodayViewBtn').classList.remove('bg-gray-100', 'text-gray-700');
+            document.getElementById('mobileWeekViewBtn').classList.remove('bg-iceberg', 'text-white');
+            document.getElementById('mobileWeekViewBtn').classList.add('bg-gray-100', 'text-gray-700');
+            
             renderTasks();
         }
 
@@ -1011,10 +1050,19 @@
             currentView = 'week';
             document.getElementById('todayView').classList.add('hidden');
             document.getElementById('quadrantView').classList.remove('hidden');
+            
+            // Update desktop buttons
             document.getElementById('weekViewBtn').classList.add('bg-iceberg', 'text-white');
             document.getElementById('weekViewBtn').classList.remove('bg-gray-200', 'text-gray-700');
             document.getElementById('todayViewBtn').classList.remove('bg-iceberg', 'text-white');
             document.getElementById('todayViewBtn').classList.add('bg-gray-200', 'text-gray-700');
+            
+            // Update mobile buttons
+            document.getElementById('mobileWeekViewBtn').classList.add('bg-iceberg', 'text-white');
+            document.getElementById('mobileWeekViewBtn').classList.remove('bg-gray-100', 'text-gray-700');
+            document.getElementById('mobiletodayViewBtn').classList.remove('bg-iceberg', 'text-white');
+            document.getElementById('mobiletodayViewBtn').classList.add('bg-gray-100', 'text-gray-700');
+            
             switchQuadrant('do');
         }
 
@@ -1033,15 +1081,15 @@
             
             // Update title
             const titles = {
-                do: 'Do - Important & Urgent',
-                plan: 'Plan - Important Only',
-                delegate: 'Delegate - Urgent Only',
-                eliminate: 'Eliminate - Neither Important nor Urgent'
+                do: '今すぐやる <span class="text-base font-normal text-gray-600">(Do - Important & Urgent)</span>',
+                plan: '計画する <span class="text-base font-normal text-gray-600">(Plan - Important Only)</span>',
+                delegate: '人に任せる <span class="text-base font-normal text-gray-600">(Delegate - Urgent Only)</span>',
+                eliminate: 'やらない <span class="text-base font-normal text-gray-600">(Eliminate - Neither Important nor Urgent)</span>'
             };
             
             const titleElement = document.getElementById('currentQuadrantTitle');
             if (titleElement) {
-                titleElement.textContent = titles[quadrant];
+                titleElement.innerHTML = titles[quadrant];
             }
             
             renderTasks();
@@ -1173,7 +1221,10 @@
         // Stats and Data Management
         function updateStats() {
             const totalTasks = tasks.filter(t => !t.completed).length;
-            const completedToday = tasks.filter(t => t.completed && isToday(new Date(t.completedAt || t.createdAt))).length;
+            const completedToday = tasks.filter(t => {
+                if (!t.completed || !t.completedAt) return false;
+                return isToday(new Date(t.completedAt));
+            }).length;
             const highPriority = tasks.filter(t => !t.completed && t.important && t.urgent).length;
             
             const totalElement = document.getElementById('total-tasks');
