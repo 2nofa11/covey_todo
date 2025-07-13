@@ -23,7 +23,7 @@ const modal = useModal()
 // フィルタリングと統計（refに変換）
 const tasksRef = toRef(todoStore, 'tasks')
 const { todayTasks, getQuadrantTasks, quadrantCounts, getQuadrant } = useTaskFilters(tasksRef)
-const { stats, urgentDependency, q2Color, urgentColor, quadrantRatios, overallCompletionRate } = useTaskStats(tasksRef)
+const { quadrantRatios } = useTaskStats(tasksRef)
 
 // クワドラントタスクを取得（リアクティブ）
 const quadrantTasks = computed(() =>
