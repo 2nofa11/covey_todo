@@ -6,11 +6,12 @@ EXAMPLE: A modern and fast (rolldown + oxc based) Vue 3 starter template with Ty
 
 ## Standards
 
-- Stack: Vue.js, TypeScript, TailwindCSS v4, Vue Router, Pinia, Pinia Colada
+- Stack: Vue.js, TypeScript, TailwindCSS v4, Vue Router, Pinia, Pinia Colada, VueUse, Vitest
 - Patterns: ALWAYS use Composition API + `<script setup>`, NEVER use Options API
 - ALWAYS Keep types alongside your code, use TypeScript for type safety, prefer `interface` over `type` for defining types
 - Keep unit and integration tests alongside the file they test: `src/ui/Button.vue` + `src/ui/Button.spec.ts`
 - ALWAYS use TailwindCSS classes rather than manual CSS
+- **ALWAYS consider using VueUse utilities first** before implementing custom composables (useLocalStorage, useDark, useToggle, useEventListener, etc.)
 - DO NOT hard code colors, use Tailwind's color system
 - ONLY add meaningful comments that explain why something is done, not what it does
 - Dev server is already running on `http://localhost:5173` with HMR enabled. NEVER launch it yourself
@@ -34,7 +35,7 @@ src/
 │   ├── layout/ # Layout components (header, footer, sidebar) if any
 │   └── features/ # Feature-specific components
 │       └── home/ # EXAMPLE of components specific to the homepage
-├── composables/ # Composition functions
+├── composables/ # Composition functions (VueUse utilities available)
 ├── stores/ # Pinia stores for global state (NOT data fetching)
 ├── queries/ # Pinia Colada queries for data fetching
 │   ├── users.ts # EXAMPLE file for user-related queries
@@ -56,9 +57,10 @@ src/
 
 Frequently used commands:
 
-- `pnpm run build`: bundles the project for production
-- `pnpm run test`: runs all tests
-- `pnpm exec vitest run <test-files>`: runs one or multiple specific test files
+- `npm run build`: bundles the project for production
+- `npm run test`: runs all tests with Vitest
+- `npm run test:ui`: opens Vitest UI for interactive testing
+- `npx vitest run <test-files>`: runs one or multiple specific test files
   - add `--coverage` to check missing test coverage
 
 ## Development Workflow
@@ -77,8 +79,13 @@ ALWAYS follow the workflow when implementing a new feature or fixing a bug. This
 
 ## Unit and Integration Tests
 
+Using **Vitest** for fast unit and integration testing:
+
 - Test critical logic first
 - Split the code if needed to make it testable
+- Use `@vue/test-utils` for component testing
+- VueUse utilities like `useLocalStorage`, `useDark`, `useToggle` are available for testing
+- Tests should be placed in `src/tests/` directory or alongside components
 
 ### Using Playwright MCP Server
 
