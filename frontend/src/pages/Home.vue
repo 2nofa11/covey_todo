@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QuadrantType } from '@/types'
-import { onMounted, toRef } from 'vue'
+import { computed, onMounted, toRef } from 'vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import TaskCard from '@/components/ui/TaskCard.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
@@ -20,8 +20,10 @@ const tasksRef = toRef(todoStore, 'tasks')
 const { todayTasks, getQuadrantTasks, quadrantCounts, q2Ratio, getQuadrant } = useTaskFilters(tasksRef)
 const { stats } = useTaskStats(tasksRef)
 
-// クワドラントタスクを取得
-const quadrantTasks = getQuadrantTasks(uiStore.currentQuadrant)
+// クワドラントタスクを取得（リアクティブ）
+const quadrantTasks = computed(() => 
+  getQuadrantTasks(uiStore.currentQuadrant).value
+)
 
 // キーボードショートカット
 useKeyboardShortcuts()
@@ -300,22 +302,10 @@ onMounted(() => {
                 <h3 class="text-lg font-semibold">
                   {{ getQuadrantLabel(uiStore.currentQuadrant) }}のタスク
                 </h3>
-                <button
-                  class="bg-iceberg text-white px-3 py-1 rounded text-sm hover:opacity-90 transition-opacity"
-                  @click="uiStore.toggleQuickCapture(true)"
-                >
-                  追加
-                </button>
               </div>
 
               <div v-if="quadrantTasks.length === 0" class="text-center py-8 text-gray-500">
                 <p>このクワドラントにはタスクがありません</p>
-                <button
-                  class="mt-4 bg-iceberg text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-                  @click="uiStore.toggleQuickCapture(true)"
-                >
-                  新しいタスクを追加
-                </button>
               </div>
 
               <div v-else class="space-y-3">
