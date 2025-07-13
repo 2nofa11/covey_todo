@@ -60,6 +60,8 @@ Frequently used commands:
 - `npm run build`: bundles the project for production
 - `npm run test`: runs all tests with Vitest
 - `npm run test:ui`: opens Vitest UI for interactive testing
+- `npm run test:coverage`: runs tests with coverage report (text output)
+- `npm run test:coverage:ui`: runs tests with coverage in UI mode
 - `npm run lint`: runs ESLint to check code quality
 - `npm run lint:fix`: runs ESLint with auto-fix
 - `npx vitest run <test-files>`: runs one or multiple specific test files
@@ -89,6 +91,17 @@ Using **Vitest** for fast unit and integration testing:
 - Use `@vue/test-utils` for component testing
 - VueUse utilities like `useLocalStorage`, `useDark`, `useToggle` are available for testing
 - Tests should be placed in `src/tests/` directory or alongside components
+
+### Coverage Configuration
+
+Vitest coverage is configured with V8 provider and excludes:
+- Configuration files (`**/*.config.*`)
+- Documentation files (`**/CLAUDE.md`)
+- Type definition files (`**/*.d.ts`)
+- Test files themselves (`**/*.spec.ts`, `**/*.test.ts`)
+- Generated directories (`node_modules/`, `dist/`, `coverage/`)
+
+Coverage reports are generated in multiple formats: text (console), JSON, and HTML. The HTML report is saved in `coverage/index.html` for detailed analysis.
 
 ### Using Playwright MCP Server
 
