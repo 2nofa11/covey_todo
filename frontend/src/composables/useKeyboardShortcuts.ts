@@ -15,7 +15,12 @@ export function useKeyboardShortcuts() {
           return
         }
       }
-      e.preventDefault()
+      
+      // 定義されているショートカットキーのみpreventDefaultを実行
+      const definedKeys = ['n', 'escape', 't', 'w', '1', '2', '3', '4']
+      if (definedKeys.includes(e.key.toLowerCase())) {
+        e.preventDefault()
+      }
     },
   })
 
