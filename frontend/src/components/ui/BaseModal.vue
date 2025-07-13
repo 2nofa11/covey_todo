@@ -40,12 +40,13 @@ function getFocusableElements(): HTMLElement[] {
 }
 
 // モーダルの開閉制御
-watch(() => props.modelValue, (newValue) => {
+watch(() => props.modelValue, (newValue, oldValue) => {
   if (newValue) {
     openModal()
   }
-  else {
-    closeModal()
+  else if (oldValue !== undefined) {
+    // 初期化時 (oldValue === undefined) は closeModal を呼ばない
+    closeModal(true)
   }
 }, { immediate: true })
 
@@ -76,7 +77,9 @@ function openModal() {
   }
 }
 
-function closeModal() {
+function closeModal(force = false) {
+  if (!force && !props.modelValue) return
+
   if (dialogRef.value) {
     dialogRef.value.close()
   }
@@ -94,7 +97,7 @@ function closeModal() {
 // Escapeキーでモーダルを閉じる
 onKeyStroke('Escape', () => {
   if (props.modelValue) {
-    closeModal()
+    closeModal(true)
   }
 })
 
@@ -129,7 +132,7 @@ onKeyStroke('Tab', (e) => {
 // backdrop クリックでモーダルを閉じる
 function handleBackdropClick(event: MouseEvent) {
   if (event.target === dialogRef.value) {
-    closeModal()
+    closeModal(true)
   }
 }
 </script>
@@ -155,7 +158,7 @@ function handleBackdropClick(event: MouseEvent) {
           class="text-gray-400 hover:text-gray-600 p-1"
           type="button"
           aria-label="モーダルを閉じる"
-          @click="closeModal"
+          @click="() => closeModal(true)"
         >
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
             <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />

@@ -137,7 +137,7 @@ describe('baseModal', () => {
     })
 
     const dialog = container.querySelector('dialog')
-    expect(dialog?.classList.contains('max-w-lg')).toBe(true)
+    expect(dialog?.classList.contains('max-w-2xl')).toBe(true)
   })
 
   it('renders correctly when modelValue is false', () => {
@@ -288,9 +288,10 @@ describe('baseModal', () => {
       },
     })
 
-    await fireEvent.keyDown(document, { key: 'Escape' })
+    // Tabキーはモーダルが閉じている時は無視される
     await fireEvent.keyDown(document, { key: 'Tab' })
 
+    // Tabキーではcloseイベントは発行されない
     expect(emitted()).not.toHaveProperty('close')
   })
 

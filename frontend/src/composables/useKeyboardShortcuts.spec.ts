@@ -10,7 +10,16 @@ vi.mock('@vueuse/core', () => ({
 }))
 
 // Mock UI store
-vi.mock('@/stores/useUIStore')
+const mockUiStore = {
+  currentView: 'today',
+  switchToTodayView: vi.fn(),
+  switchToWeekView: vi.fn(),
+  switchQuadrant: vi.fn(),
+}
+
+vi.mock('@/stores/useUIStore', () => ({
+  useUIStore: () => mockUiStore,
+}))
 
 describe('useKeyboardShortcuts', () => {
   let mockWhenever: any
@@ -279,5 +288,55 @@ describe('useKeyboardShortcuts', () => {
 
     // Verify callbacks were registered
     expect(callbacks).toHaveLength(6)
+  })
+
+  it('switches to quadrants when in week view', () => {
+    const callbacks: any[] = []
+
+    // Capture the callbacks passed to whenever
+    mockWhenever.mockImplementation((_key: any, callback: any) => {
+      callbacks.push(callback)
+    })
+
+    // Set current view to week
+    mockUiStore.currentView = 'week'
+
+    useKeyboardShortcuts()
+
+    // Execute the quadrant callbacks (callbacks 2-5 are for _1-_4)
+    callbacks[2]() // _1 callback
+    callbacks[3]() // _2 callback  
+    callbacks[4]() // _3 callback
+    callbacks[5]() // _4 callback
+
+    expect(mockUiStore.switchQuadrant).toHaveBeenCalledWith('do')
+    expect(mockUiStore.switchQuadrant).toHaveBeenCalledWith('plan')
+    expect(mockUiStore.switchQuadrant).toHaveBeenCalledWith('delegate') 
+    expect(mockUiStore.switchQuadrant).toHaveBeenCalledWith('eliminate')
+  })
+
+  it('does not switch quadrants when not in week view', () => {
+    const callbacks: any[] = []
+
+    // Capture the callbacks passed to whenever
+    mockWhenever.mockImplementation((_key: any, callback: any) => {
+      callbacks.push(callback)
+    })
+
+    // Set current view to today (not week)
+    mockUiStore.currentView = 'today'
+
+    useKeyboardShortcuts()
+
+    // Execute the quadrant callbacks (callbacks 2-5 are for _1-_4)
+    callbacks[2]() // _1 callback
+    callbacks[3]() // _2 callback  
+    callbacks[4]() // _3 callback
+    callbacks[5]() // _4 callback
+
+    // Quadrant switches should not be called when not in week view
+    expect(mockUiStore.switchQuadrant).not.toHaveBeenCalledWith('plan')
+    expect(mockUiStore.switchQuadrant).not.toHaveBeenCalledWith('delegate')
+    expect(mockUiStore.switchQuadrant).not.toHaveBeenCalledWith('eliminate')
   })
 })

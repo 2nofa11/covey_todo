@@ -1,16 +1,24 @@
 import { describe, expect, it, vi } from 'vitest'
 
 // Mock Vue and Pinia
-vi.mock('vue', () => ({
-  createApp: vi.fn(() => ({
-    use: vi.fn().mockReturnThis(),
-    mount: vi.fn(),
-  })),
-}))
+vi.mock('vue', async () => {
+  const actual = await vi.importActual('vue')
+  return {
+    ...actual,
+    createApp: vi.fn(() => ({
+      use: vi.fn().mockReturnThis(),
+      mount: vi.fn(),
+    })),
+  }
+})
 
-vi.mock('pinia', () => ({
-  createPinia: vi.fn(() => ({})),
-}))
+vi.mock('pinia', async () => {
+  const actual = await vi.importActual('pinia')
+  return {
+    ...actual,
+    createPinia: vi.fn(() => ({})),
+  }
+})
 
 // Mock App component
 vi.mock('./App.vue', () => ({

@@ -289,4 +289,45 @@ describe('useTaskStats', () => {
     expect(q2Color.value).toBe('bg-red-400') // 25% なので赤色（30%未満）
     expect(urgentColor.value).toBe('bg-yellow-400') // 50% なので黄色
   })
+
+  it('handles edge cases for completion rates', () => {
+    const tasks = ref<Task[]>([])
+    const { overallCompletionRate, urgentDependency } = useTaskStats(tasks)
+
+    expect(overallCompletionRate.value).toBe(0) // No tasks = 0%
+    expect(urgentDependency.value).toBe(0) // No tasks = 0%
+  })
+
+  it('calculates color variations correctly', () => {
+    // Test low urgent dependency (≤20%)
+    const lowUrgentTasks = ref<Task[]>([
+      createMockTask({ urgent: true, completed: false }),
+      createMockTask({ urgent: false, completed: false }),
+      createMockTask({ urgent: false, completed: false }),
+      createMockTask({ urgent: false, completed: false }),
+      createMockTask({ urgent: false, completed: false }),
+    ])
+    const { urgentColor: lowColor } = useTaskStats(lowUrgentTasks)
+    expect(lowColor.value).toBe('bg-green-400')
+
+    // Test medium urgent dependency (≤50%)
+    const mediumUrgentTasks = ref<Task[]>([
+      createMockTask({ urgent: true, completed: false }),
+      createMockTask({ urgent: true, completed: false }),
+      createMockTask({ urgent: false, completed: false }),
+      createMockTask({ urgent: false, completed: false }),
+    ])
+    const { urgentColor: mediumColor } = useTaskStats(mediumUrgentTasks)
+    expect(mediumColor.value).toBe('bg-yellow-400')
+
+    // Test high urgent dependency (>50%)
+    const highUrgentTasks = ref<Task[]>([
+      createMockTask({ urgent: true, completed: false }),
+      createMockTask({ urgent: true, completed: false }),
+      createMockTask({ urgent: true, completed: false }),
+      createMockTask({ urgent: false, completed: false }),
+    ])
+    const { urgentColor: highColor } = useTaskStats(highUrgentTasks)
+    expect(highColor.value).toBe('bg-red-400')
+  })
 })

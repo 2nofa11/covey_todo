@@ -1,4 +1,4 @@
-import { render } from '@testing-library/vue'
+import { render, fireEvent } from '@testing-library/vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import ModalContainer from './ModalContainer.vue'
@@ -23,7 +23,12 @@ vi.mock('@/composables/useModal', () => ({
 vi.mock('./ui/BaseModal.vue', () => ({
   default: {
     name: 'BaseModal',
-    template: '<div data-testid="base-modal"><slot /></div>',
+    template: `
+      <div data-testid="base-modal" 
+           @click="() => { $emit('update:modelValue', false); $emit('close'); }">
+        <slot />
+      </div>
+    `,
     props: ['modelValue'],
     emits: ['update:modelValue', 'close'],
   },
@@ -86,5 +91,32 @@ describe('modalContainer', () => {
     // BaseModalが正しく表示されていることを検証
     expect(baseModal).toBeTruthy()
     expect(mockModalState.isOpen).toBe(true)
+  })
+
+  it('handleClose関数がクリック時に呼ばれる', async () => {
+    mockModalState.component = DummyComponent
+    mockModalState.isOpen = true
+
+    const { getByTestId } = render(ModalContainer)
+    
+    // BaseModalをクリックしてhandleCloseを発火
+    const baseModal = getByTestId('base-modal')
+    await fireEvent.click(baseModal)
+    
+    expect(mockClose).toHaveBeenCalled()
+  })
+
+  it('close イベントでhandleClose関数が呼ばれる', async () => {
+    mockModalState.component = DummyComponent
+    mockModalState.isOpen = true
+
+    const { getByTestId } = render(ModalContainer)
+    
+    // BaseModalをクリックしてcloseイベントを発火
+    const baseModal = getByTestId('base-modal')
+    await fireEvent.click(baseModal)
+    
+    // handleClose関数が呼ばれてmockCloseが実行される
+    expect(mockClose).toHaveBeenCalled()
   })
 })
