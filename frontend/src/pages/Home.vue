@@ -28,6 +28,10 @@ const quickCaptureDialog = ref<HTMLDialogElement>()
 const bigRocksDialog = ref<HTMLDialogElement>()
 const onboardingDialog = ref<HTMLDialogElement>()
 
+// フォーカス管理用
+const previousFocusElement = ref<HTMLElement | null>(null)
+const focusableElements = ref<NodeListOf<HTMLElement> | null>(null)
+
 // 型定義
 interface Task {
   id: number
@@ -213,10 +217,50 @@ function deleteTask(taskId: number) {
   saveData()
 }
 
+// フォーカストラップ機能
+function trapFocus(dialog: HTMLDialogElement) {
+  focusableElements.value = dialog.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  )
+  
+  if (focusableElements.value.length === 0) return
+  
+  const firstElement = focusableElements.value[0]
+  const lastElement = focusableElements.value[focusableElements.value.length - 1]
+  
+  function handleTabKey(e: KeyboardEvent) {
+    if (e.key === 'Tab') {
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault()
+          lastElement.focus()
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault()
+          firstElement.focus()
+        }
+      }
+    }
+  }
+  
+  dialog.addEventListener('keydown', handleTabKey)
+  
+  // クリーンアップ関数を返す
+  return () => {
+    dialog.removeEventListener('keydown', handleTabKey)
+  }
+}
+
 // モーダル管理
 function openQuickCapture() {
   if (quickCaptureDialog.value) {
+    // 現在のフォーカス要素を保存
+    previousFocusElement.value = document.activeElement as HTMLElement
+    
     quickCaptureDialog.value.showModal()
+    trapFocus(quickCaptureDialog.value)
+    
     nextTick(() => {
       const input = document.getElementById('taskInput') as HTMLInputElement
       if (input)
@@ -231,6 +275,12 @@ function closeQuickCapture() {
   }
   taskInput.value = ''
   resetCaptureState()
+  
+  // フォーカスを元の位置に戻す
+  if (previousFocusElement.value) {
+    previousFocusElement.value.focus()
+    previousFocusElement.value = null
+  }
 }
 
 function resetCaptureState() {
@@ -279,13 +329,29 @@ function switchQuadrant(quadrant: QuadrantType) {
 // Big Rocks管理
 function openBigRocks() {
   if (bigRocksDialog.value) {
+    // 現在のフォーカス要素を保存
+    previousFocusElement.value = document.activeElement as HTMLElement
+    
     bigRocksDialog.value.showModal()
+    trapFocus(bigRocksDialog.value)
+    
+    nextTick(() => {
+      const firstInput = bigRocksDialog.value?.querySelector('input') as HTMLInputElement
+      if (firstInput)
+        firstInput.focus()
+    })
   }
 }
 
 function closeBigRocks() {
   if (bigRocksDialog.value) {
     bigRocksDialog.value.close()
+  }
+  
+  // フォーカスを元の位置に戻す
+  if (previousFocusElement.value) {
+    previousFocusElement.value.focus()
+    previousFocusElement.value = null
   }
 }
 
@@ -316,7 +382,17 @@ function handleBigRocks(e: Event) {
 // オンボーディング
 function showOnboarding() {
   if (onboardingDialog.value) {
+    // 現在のフォーカス要素を保存
+    previousFocusElement.value = document.activeElement as HTMLElement
+    
     onboardingDialog.value.showModal()
+    trapFocus(onboardingDialog.value)
+    
+    nextTick(() => {
+      const firstButton = onboardingDialog.value?.querySelector('button') as HTMLButtonElement
+      if (firstButton)
+        firstButton.focus()
+    })
   }
   currentOnboardingStep.value = 1
 }
@@ -348,6 +424,12 @@ function finishOnboarding() {
   localStorage.setItem('coveyOnboarded', 'true')
   if (onboardingDialog.value) {
     onboardingDialog.value.close()
+  }
+  
+  // フォーカスを元の位置に戻す
+  if (previousFocusElement.value) {
+    previousFocusElement.value.focus()
+    previousFocusElement.value = null
   }
 }
 
@@ -455,12 +537,82 @@ dialog[open] {
     transform: scale(1);
   }
 }
+
+/* スクリーンリーダー専用テキスト */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 高コントラストモード対応 */
+@media (prefers-contrast: high) {
+  .text-gray-500 {
+    color: #1f2937 !important;
+  }
+  .text-gray-600 {
+    color: #1f2937 !important;
+  }
+  .bg-gray-100 {
+    background-color: #f3f4f6 !important;
+    border: 1px solid #374151 !important;
+  }
+}
+
+/* 縮小モーション設定対応 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  dialog[open] {
+    animation: none;
+  }
+}
+
+/* フォーカス表示の強化 */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Skip link スタイル */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
 </style>
 
 <template>
   <div class="bg-white min-h-screen font-sans leading-relaxed-jp tracking-jp">
+    <!-- Skip Link -->
+    <a href="#main-content" class="skip-link">
+      メインコンテンツにスキップ
+    </a>
+    
     <!-- スクリーンリーダー用の状態通知領域 -->
-    <div id="status-announcements" aria-live="polite" aria-atomic="true" class="absolute -top-px -left-px w-px h-px overflow-hidden whitespace-nowrap">
+    <div id="status-announcements" aria-live="polite" aria-atomic="true" class="sr-only">
       {{ statusMessage }}
     </div>
 
@@ -473,7 +625,7 @@ dialog[open] {
               <h1 class="text-3xl font-bold text-gray-900">
                 Covey Todo
               </h1>
-              <p class="text-sm text-gray-500 mt-1">
+              <p class="text-sm text-gray-700 mt-1">
                 重要度・緊急度マトリックス
               </p>
             </div>
@@ -486,9 +638,10 @@ dialog[open] {
                 role="tab"
                 :aria-selected="currentView === 'today'"
                 aria-controls="today-view"
+                :tabindex="currentView === 'today' ? 0 : -1"
                 @click="switchToTodayView"
               >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                   <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                 </svg>
                 <span>今日</span>
@@ -501,9 +654,10 @@ dialog[open] {
                 role="tab"
                 :aria-selected="currentView === 'week'"
                 aria-controls="week-view"
+                :tabindex="currentView === 'week' ? 0 : -1"
                 @click="switchToWeekView"
               >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                   <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                 </svg>
                 <span>週間</span>
@@ -525,7 +679,7 @@ dialog[open] {
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="main">
+    <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="main">
       <!-- Mobile View Toggle -->
       <section class="md:hidden mb-6" aria-label="ビュー切り替え">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-1" role="tablist" aria-label="表示モード選択">
@@ -538,9 +692,10 @@ dialog[open] {
               role="tab"
               :aria-selected="currentView === 'today'"
               aria-controls="today-view"
+              :tabindex="currentView === 'today' ? 0 : -1"
               @click="switchToTodayView"
             >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                 <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
               </svg>
               <span>今日</span>
@@ -553,10 +708,11 @@ dialog[open] {
               role="tab"
               :aria-selected="currentView === 'week'"
               aria-controls="week-view"
+              :tabindex="currentView === 'week' ? 0 : -1"
               @click="switchToWeekView"
             >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
               </svg>
               <span>週間</span>
             </button>
@@ -585,7 +741,7 @@ dialog[open] {
             @click="switchQuadrant(quadrant as QuadrantType)"
           >
             <div class="flex items-center space-x-2">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                 <path v-if="quadrant === 'do'" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
                 <path v-else-if="quadrant === 'plan'" fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd" />
                 <path v-else-if="quadrant === 'delegate'" fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
@@ -623,7 +779,7 @@ dialog[open] {
         <!-- Task Lists -->
         <section class="lg:col-span-3" aria-label="タスク一覧">
           <!-- Today View -->
-          <article v-show="currentView === 'today'" id="today-view" class="view-container" role="tabpanel" aria-labelledby="today-tab">
+          <article v-show="currentView === 'today'" id="today-view" class="view-container" role="tabpanel" aria-labelledby="today-tab desktop-today-tab">
             <div class="bg-white rounded-lg shadow-md p-8 mb-8">
               <h2 class="text-xl font-bold text-gray-900 mb-8">
                 今日の重点項目 <span class="text-base font-normal text-gray-600">(Today's Focus)</span>
@@ -641,7 +797,7 @@ dialog[open] {
               <div v-if="todayTasks.length === 0" class="text-center py-12">
                 <div class="mb-6">
                   <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-iceberg to-blue-500 rounded-full flex items-center justify-center">
-                    <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
                     </svg>
                   </div>
@@ -720,8 +876,8 @@ dialog[open] {
           </article>
 
           <!-- Quadrant Views -->
-          <article v-show="currentView === 'week'" id="week-view" class="view-container" role="tabpanel" aria-labelledby="week-tab">
-            <div :id="`${currentQuadrant}-panel`" class="bg-white rounded-lg shadow-md p-8" role="tabpanel" :aria-labelledby="`${currentQuadrant}-tab`">
+          <article v-show="currentView === 'week'" id="week-view" class="view-container" role="tabpanel" aria-labelledby="week-tab desktop-week-tab">
+            <div :id="`${currentQuadrant}-panel`" class="bg-white rounded-lg shadow-md p-8" role="tabpanel" :aria-labelledby="`${currentQuadrant}-tab`" :tabindex="0">
               <h2 class="text-xl font-bold text-gray-900 mb-8">
                 <span v-if="currentQuadrant === 'do'">今すぐやる <span class="text-base font-normal text-gray-600">(Do - Important & Urgent)</span></span>
                 <span v-else-if="currentQuadrant === 'plan'">計画する <span class="text-base font-normal text-gray-600">(Plan - Important Only)</span></span>
@@ -732,7 +888,7 @@ dialog[open] {
               <div v-if="quadrantTasks.length === 0" class="text-center py-12 text-gray-500">
                 <div class="mb-6">
                   <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                    <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
                   </div>
@@ -921,7 +1077,7 @@ dialog[open] {
         新しいタスクを追加 <span class="text-sm font-normal text-gray-600">(Add New Task)</span>
       </h2>
       <form @submit.prevent="handleQuickCapture">
-        <label for="taskInput" class="absolute -top-px -left-px w-px h-px overflow-hidden whitespace-nowrap">タスクの内容を入力してください</label>
+        <label for="taskInput" class="sr-only">タスクの内容を入力してください</label>
         <input
           id="taskInput"
           v-model="taskInput"
@@ -946,7 +1102,7 @@ dialog[open] {
               ]"
               @click="toggleImportantCapture"
             >
-              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
               <span class="font-medium">重要</span>
@@ -958,7 +1114,7 @@ dialog[open] {
               ]"
               @click="toggleUrgentCapture"
             >
-              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
               </svg>
               <span class="font-medium">緊急</span>
@@ -996,7 +1152,7 @@ dialog[open] {
             class="px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center space-x-1"
             @click="closeQuickCapture"
           >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
             </svg>
             <span>キャンセル</span>
@@ -1005,7 +1161,7 @@ dialog[open] {
             type="submit"
             class="px-6 py-2 bg-iceberg hover:bg-blue-600 text-white rounded-lg font-medium flex items-center space-x-1"
           >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
             <span>タスク追加</span>
@@ -1032,18 +1188,24 @@ dialog[open] {
             <h3 class="font-semibold text-iceberg mb-3">
               {{ role.label }} <span class="text-sm font-normal text-gray-600">({{ role.labelEn }})</span>
             </h3>
+            <p :id="`${role.key}-description`" class="sr-only">
+              {{ role.label }}分野の週間最重要事項を設定してください
+            </p>
             <div class="space-y-2">
-              <input
-                v-for="i in 3"
-                :id="`${role.key}-${i - 1}`"
-                :key="i"
-                :name="`${role.key}-${i - 1}`"
-                type="text"
-                :placeholder="`最重要事項 ${i}`"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md"
-                :value="bigRocks[role.key]?.[i - 1] || ''"
-                :aria-label="`${role.label}の最重要事項 ${i}`"
-              >
+              <div v-for="i in 3" :key="i" class="input-group">
+                <label :for="`${role.key}-${i - 1}`" class="sr-only">
+                  {{ role.label }}の最重要事項 {{ i }}
+                </label>
+                <input
+                  :id="`${role.key}-${i - 1}`"
+                  :name="`${role.key}-${i - 1}`"
+                  type="text"
+                  :placeholder="`最重要事項 ${i}`"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-iceberg focus:border-transparent"
+                  :value="bigRocks[role.key]?.[i - 1] || ''"
+                  :aria-describedby="`${role.key}-description`"
+                >
+              </div>
             </div>
           </div>
         </div>
@@ -1053,7 +1215,7 @@ dialog[open] {
             class="px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center space-x-1"
             @click="closeBigRocks"
           >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
             </svg>
             <span>キャンセル</span>
@@ -1062,7 +1224,7 @@ dialog[open] {
             type="submit"
             class="px-6 py-2 bg-iceberg hover:bg-blue-600 text-white rounded-lg font-medium flex items-center space-x-1"
           >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd" />
             </svg>
             <span>最重要事項を保存</span>
@@ -1077,7 +1239,7 @@ dialog[open] {
       <div v-show="currentOnboardingStep === 1" class="onboarding-step">
         <div class="text-center mb-8">
           <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-iceberg to-blue-500 rounded-full flex items-center justify-center">
-            <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
             </svg>
           </div>
@@ -1179,7 +1341,7 @@ dialog[open] {
               </p>
               <div class="bg-white rounded-lg p-4 border-2 border-dashed border-gray-300">
                 <div class="flex items-center space-x-3">
-                  <label for="tutorialTaskInput" class="absolute -top-px -left-px w-px h-px overflow-hidden whitespace-nowrap">チュートリアル用タスク入力</label>
+                  <label for="tutorialTaskInput" class="sr-only">チュートリアル用タスク入力</label>
                   <input
                     id="tutorialTaskInput"
                     v-model="tutorialTaskInput"
