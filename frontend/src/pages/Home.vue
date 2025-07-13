@@ -20,6 +20,14 @@ const showWeeklyReviewModal = ref(false)
 const taskInput = ref('')
 const tutorialTaskInput = ref('')
 
+// アクセシビリティ用状態通知
+const statusMessage = ref('')
+
+// Dialog要素への参照
+const quickCaptureDialog = ref<HTMLDialogElement>()
+const bigRocksDialog = ref<HTMLDialogElement>()
+const onboardingDialog = ref<HTMLDialogElement>()
+
 // 型定義
 interface Task {
   id: number
@@ -122,6 +130,15 @@ function getQuadrantLabel(quadrant: QuadrantType): string {
   return labels[quadrant]
 }
 
+// アクセシビリティ用状態通知
+function announceStatus(message: string) {
+  statusMessage.value = message
+  // スクリーンリーダーに通知後、メッセージをクリア
+  setTimeout(() => {
+    statusMessage.value = ''
+  }, 1000)
+}
+
 // データ管理
 function saveData() {
   localStorage.setItem('coveyTasks', JSON.stringify(tasks.value))
@@ -152,6 +169,7 @@ function addTask(title: string, important: boolean, urgent: boolean) {
   }
   tasks.value.push(task)
   saveData()
+  announceStatus(`新しいタスク「${title}」を追加しました`)
 }
 
 function toggleCompleted(taskId: number) {
@@ -160,9 +178,11 @@ function toggleCompleted(taskId: number) {
     task.completed = !task.completed
     if (task.completed) {
       task.completedAt = new Date().toISOString()
+      announceStatus(`タスク「${task.title}」を完了としてマークしました`)
     }
     else {
       delete task.completedAt
+      announceStatus(`タスク「${task.title}」を未完了としてマークしました`)
     }
     saveData()
   }
@@ -185,22 +205,30 @@ function toggleUrgent(taskId: number) {
 }
 
 function deleteTask(taskId: number) {
+  const task = tasks.value.find(t => t.id === taskId)
+  if (task) {
+    announceStatus(`タスク「${task.title}」を削除しました`)
+  }
   tasks.value = tasks.value.filter(t => t.id !== taskId)
   saveData()
 }
 
 // モーダル管理
 function openQuickCapture() {
-  showQuickCaptureModal.value = true
-  nextTick(() => {
-    const input = document.getElementById('taskInput') as HTMLInputElement
-    if (input)
-      input.focus()
-  })
+  if (quickCaptureDialog.value) {
+    quickCaptureDialog.value.showModal()
+    nextTick(() => {
+      const input = document.getElementById('taskInput') as HTMLInputElement
+      if (input)
+        input.focus()
+    })
+  }
 }
 
 function closeQuickCapture() {
-  showQuickCaptureModal.value = false
+  if (quickCaptureDialog.value) {
+    quickCaptureDialog.value.close()
+  }
   taskInput.value = ''
   resetCaptureState()
 }
@@ -229,23 +257,36 @@ function toggleUrgentCapture() {
 // ビュー切り替え
 function switchToTodayView() {
   currentView.value = 'today'
+  announceStatus('今日ビューに切り替えました')
 }
 
 function switchToWeekView() {
   currentView.value = 'week'
+  announceStatus('週間ビューに切り替えました')
 }
 
 function switchQuadrant(quadrant: QuadrantType) {
   currentQuadrant.value = quadrant
+  const quadrantNames = {
+    do: '今すぐやる',
+    plan: '計画する',
+    delegate: '人に任せる',
+    eliminate: 'やらない',
+  }
+  announceStatus(`${quadrantNames[quadrant]}の領域に切り替えました`)
 }
 
 // Big Rocks管理
 function openBigRocks() {
-  showBigRocksModal.value = true
+  if (bigRocksDialog.value) {
+    bigRocksDialog.value.showModal()
+  }
 }
 
 function closeBigRocks() {
-  showBigRocksModal.value = false
+  if (bigRocksDialog.value) {
+    bigRocksDialog.value.close()
+  }
 }
 
 function handleBigRocks(e: Event) {
@@ -274,7 +315,9 @@ function handleBigRocks(e: Event) {
 
 // オンボーディング
 function showOnboarding() {
-  showOnboardingModal.value = true
+  if (onboardingDialog.value) {
+    onboardingDialog.value.showModal()
+  }
   currentOnboardingStep.value = 1
 }
 
@@ -303,12 +346,18 @@ function addTutorialTask() {
 
 function finishOnboarding() {
   localStorage.setItem('coveyOnboarded', 'true')
-  showOnboardingModal.value = false
+  if (onboardingDialog.value) {
+    onboardingDialog.value.close()
+  }
 }
 
 // キーボードショートカット
 function handleKeyboard(e: KeyboardEvent) {
   if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+    // モーダル内でのEscapeキーハンドリング
+    if (e.key === 'Escape') {
+      closeAllModals()
+    }
     return
   }
 
@@ -320,14 +369,52 @@ function handleKeyboard(e: KeyboardEvent) {
     case 'escape':
       closeAllModals()
       break
+    case '1':
+      if (currentView.value === 'week') {
+        e.preventDefault()
+        switchQuadrant('do')
+      }
+      break
+    case '2':
+      if (currentView.value === 'week') {
+        e.preventDefault()
+        switchQuadrant('plan')
+      }
+      break
+    case '3':
+      if (currentView.value === 'week') {
+        e.preventDefault()
+        switchQuadrant('delegate')
+      }
+      break
+    case '4':
+      if (currentView.value === 'week') {
+        e.preventDefault()
+        switchQuadrant('eliminate')
+      }
+      break
+    case 't':
+      e.preventDefault()
+      switchToTodayView()
+      break
+    case 'w':
+      e.preventDefault()
+      switchToWeekView()
+      break
   }
 }
 
 function closeAllModals() {
-  showQuickCaptureModal.value = false
-  showBigRocksModal.value = false
+  if (quickCaptureDialog.value?.open) {
+    quickCaptureDialog.value.close()
+  }
+  if (bigRocksDialog.value?.open) {
+    bigRocksDialog.value.close()
+  }
+  if (onboardingDialog.value?.open) {
+    onboardingDialog.value.close()
+  }
   showWeeklyReviewModal.value = false
-  showOnboardingModal.value = false
 }
 
 // 初期化
@@ -346,10 +433,39 @@ onMounted(() => {
 })
 </script>
 
+<style scoped>
+/* ダイアログの背景を半透明に設定 */
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+}
+
+/* フォールバック用（古いブラウザ対応） */
+dialog[open] {
+  animation: modal-appear 0.2s ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>
+
 <template>
   <div class="bg-white min-h-screen font-sans leading-relaxed-jp tracking-jp">
+    <!-- スクリーンリーダー用の状態通知領域 -->
+    <div id="status-announcements" aria-live="polite" aria-atomic="true" class="absolute -top-px -left-px w-px h-px overflow-hidden whitespace-nowrap">
+      {{ statusMessage }}
+    </div>
+
     <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-caramel">
+    <header class="bg-white shadow-sm border-b border-caramel" role="banner">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-20">
           <div class="flex items-center space-x-6">
@@ -361,11 +477,15 @@ onMounted(() => {
                 重要度・緊急度マトリックス
               </p>
             </div>
-            <div class="hidden md:flex space-x-4">
+            <div class="hidden md:flex space-x-4" role="tablist" aria-label="デスクトップ用表示モード選択">
               <button
-                class="px-3 py-1 rounded-md font-medium flex items-center space-x-1" :class="[
+                id="desktop-today-tab" class="px-3 py-1 rounded-md font-medium flex items-center space-x-1"
+                :class="[
                   currentView === 'today' ? 'bg-iceberg text-white' : 'bg-gray-200 text-gray-700',
                 ]"
+                role="tab"
+                :aria-selected="currentView === 'today'"
+                aria-controls="today-view"
                 @click="switchToTodayView"
               >
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -374,9 +494,13 @@ onMounted(() => {
                 <span>今日</span>
               </button>
               <button
-                class="px-3 py-1 rounded-md font-medium flex items-center space-x-1" :class="[
+                id="desktop-week-tab" class="px-3 py-1 rounded-md font-medium flex items-center space-x-1"
+                :class="[
                   currentView === 'week' ? 'bg-iceberg text-white' : 'bg-gray-200 text-gray-700',
                 ]"
+                role="tab"
+                :aria-selected="currentView === 'week'"
+                aria-controls="week-view"
                 @click="switchToWeekView"
               >
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -389,6 +513,8 @@ onMounted(() => {
           <div class="flex items-center space-x-4">
             <button
               class="bg-tomato hover:bg-red-600 text-white p-2 rounded-full font-bold text-xl"
+              aria-label="新しいタスクを追加"
+              title="新しいタスクを追加"
               @click="openQuickCapture"
             >
               ＋
@@ -399,15 +525,19 @@ onMounted(() => {
     </header>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="main">
       <!-- Mobile View Toggle -->
-      <div class="md:hidden mb-6">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+      <section class="md:hidden mb-6" aria-label="ビュー切り替え">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-1" role="tablist" aria-label="表示モード選択">
           <div class="grid grid-cols-2 gap-1">
             <button
-              class="mobile-view-toggle px-4 py-3 rounded-md font-medium text-sm flex items-center justify-center space-x-2 transition-all duration-200" :class="[
+              id="today-tab" class="mobile-view-toggle px-4 py-3 rounded-md font-medium text-sm flex items-center justify-center space-x-2 transition-all duration-200"
+              :class="[
                 currentView === 'today' ? 'bg-iceberg text-white' : 'bg-gray-100 text-gray-700',
               ]"
+              role="tab"
+              :aria-selected="currentView === 'today'"
+              aria-controls="today-view"
               @click="switchToTodayView"
             >
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -416,9 +546,13 @@ onMounted(() => {
               <span>今日</span>
             </button>
             <button
-              class="mobile-view-toggle px-4 py-3 rounded-md font-medium text-sm flex items-center justify-center space-x-2 transition-all duration-200" :class="[
+              id="week-tab" class="mobile-view-toggle px-4 py-3 rounded-md font-medium text-sm flex items-center justify-center space-x-2 transition-all duration-200"
+              :class="[
                 currentView === 'week' ? 'bg-iceberg text-white' : 'bg-gray-100 text-gray-700',
               ]"
+              role="tab"
+              :aria-selected="currentView === 'week'"
+              aria-controls="week-view"
               @click="switchToWeekView"
             >
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -428,21 +562,26 @@ onMounted(() => {
             </button>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- Quadrant Navigation -->
-      <nav v-show="currentView === 'week'" class="mb-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <nav v-show="currentView === 'week'" class="mb-8" aria-label="クアドラント選択ナビゲーション">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" role="tablist" aria-label="クアドラント選択">
           <button
             v-for="quadrant in ['do', 'plan', 'delegate', 'eliminate']"
-            :key="quadrant"
-            class="quadrant-tab py-3 px-4 rounded-lg font-semibold flex items-center justify-between" :class="[
+            :id="`${quadrant}-tab`"
+            :key="quadrant" class="quadrant-tab py-3 px-4 rounded-lg font-semibold flex items-center justify-between"
+            :class="[
               quadrant === 'do' ? 'bg-quadrant-do text-white'
               : quadrant === 'plan' ? 'bg-quadrant-plan text-white'
                 : quadrant === 'delegate' ? 'bg-quadrant-delegate text-gray-800'
                   : 'bg-quadrant-eliminate text-gray-700',
               currentQuadrant === quadrant ? 'ring-2 ring-offset-2' : '',
             ]"
+            role="tab"
+            :aria-selected="currentQuadrant === quadrant"
+            :aria-controls="`${quadrant}-panel`"
+            :aria-label="`${quadrant === 'do' ? '今すぐやる: 重要かつ緊急' : quadrant === 'plan' ? '計画する: 重要のみ' : quadrant === 'delegate' ? '人に任せる: 緊急のみ' : 'やらない: 重要でも緊急でもない'}の領域`"
             @click="switchQuadrant(quadrant as QuadrantType)"
           >
             <div class="flex items-center space-x-2">
@@ -482,9 +621,9 @@ onMounted(() => {
       <!-- Main Views -->
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <!-- Task Lists -->
-        <div class="lg:col-span-3">
+        <section class="lg:col-span-3" aria-label="タスク一覧">
           <!-- Today View -->
-          <div v-show="currentView === 'today'" class="view-container">
+          <article v-show="currentView === 'today'" id="today-view" class="view-container" role="tabpanel" aria-labelledby="today-tab">
             <div class="bg-white rounded-lg shadow-md p-8 mb-8">
               <h2 class="text-xl font-bold text-gray-900 mb-8">
                 今日の重点項目 <span class="text-base font-normal text-gray-600">(Today's Focus)</span>
@@ -540,6 +679,7 @@ onMounted(() => {
                 </div>
                 <button
                   class="bg-gradient-to-r from-tomato to-iceberg hover:from-red-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                  aria-label="最初のタスクを追加する"
                   @click="openQuickCapture"
                 >
                   ＋ 最初のタスクを追加
@@ -557,9 +697,11 @@ onMounted(() => {
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                       <input
+                        :id="`task-${task.id}-completed-today`"
                         type="checkbox"
                         :checked="task.completed"
                         class="w-5 h-5 text-iceberg rounded focus:ring-iceberg"
+                        :aria-label="`タスク ${task.title} を完了としてマーク`"
                         @change="toggleCompleted(task.id)"
                       >
                       <span :class="task.completed ? 'line-through text-gray-500' : 'text-gray-900'">
@@ -575,11 +717,11 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-          </div>
+          </article>
 
           <!-- Quadrant Views -->
-          <div v-show="currentView === 'week'" class="view-container">
-            <div class="bg-white rounded-lg shadow-md p-8">
+          <article v-show="currentView === 'week'" id="week-view" class="view-container" role="tabpanel" aria-labelledby="week-tab">
+            <div :id="`${currentQuadrant}-panel`" class="bg-white rounded-lg shadow-md p-8" role="tabpanel" :aria-labelledby="`${currentQuadrant}-tab`">
               <h2 class="text-xl font-bold text-gray-900 mb-8">
                 <span v-if="currentQuadrant === 'do'">今すぐやる <span class="text-base font-normal text-gray-600">(Do - Important & Urgent)</span></span>
                 <span v-else-if="currentQuadrant === 'plan'">計画する <span class="text-base font-normal text-gray-600">(Plan - Important Only)</span></span>
@@ -649,6 +791,7 @@ onMounted(() => {
                 </div>
                 <button
                   class="bg-gradient-to-r from-tomato to-iceberg hover:from-red-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                  aria-label="最初のタスクを追加する"
                   @click="openQuickCapture"
                 >
                   ＋ 最初のタスクを追加
@@ -664,17 +807,19 @@ onMounted(() => {
                   <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center space-x-3">
                       <input
+                        :id="`task-${task.id}-completed-quad`"
                         type="checkbox"
                         :checked="task.completed"
                         class="w-5 h-5 text-iceberg rounded focus:ring-iceberg"
+                        :aria-label="`タスク ${task.title} を完了としてマーク`"
                         @change="toggleCompleted(task.id)"
                       >
                       <span :class="task.completed ? 'line-through text-gray-500' : 'text-gray-900 font-medium'">
                         {{ task.title }}
                       </span>
                     </div>
-                    <button class="text-gray-400 hover:text-red-500" @click="deleteTask(task.id)">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <button class="text-gray-400 hover:text-red-500" :aria-label="`タスク ${task.title} を削除`" :title="`タスク ${task.title} を削除`" @click="deleteTask(task.id)">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                       </svg>
                     </button>
@@ -684,6 +829,8 @@ onMounted(() => {
                       class="flex items-center space-x-1 px-2 py-1 rounded text-sm" :class="[
                         task.important ? 'bg-iceberg text-white' : 'bg-gray-200 text-gray-600',
                       ]"
+                      :aria-label="`タスク ${task.title} の重要度を切り替え`"
+                      :aria-pressed="task.important"
                       @click="toggleImportant(task.id)"
                     >
                       <span>★</span>
@@ -693,6 +840,8 @@ onMounted(() => {
                       class="flex items-center space-x-1 px-2 py-1 rounded text-sm" :class="[
                         task.urgent ? 'bg-tomato text-white' : 'bg-gray-200 text-gray-600',
                       ]"
+                      :aria-label="`タスク ${task.title} の緊急度を切り替え`"
+                      :aria-pressed="task.urgent"
                       @click="toggleUrgent(task.id)"
                     >
                       <span>⚡</span>
@@ -702,19 +851,19 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </article>
+        </section>
 
         <!-- Sidebar -->
-        <div class="lg:col-span-1">
+        <aside class="lg:col-span-1" role="complementary" aria-label="サイドバー情報">
           <!-- Big Rocks -->
           <div class="bg-white rounded-lg shadow-md p-8 mb-8">
             <div class="flex items-center justify-between mb-8">
               <h3 class="text-lg font-semibold text-gray-900">
                 最重要事項 <span class="text-sm font-normal text-gray-600">(Big Rocks)</span>
               </h3>
-              <button class="text-iceberg hover:text-blue-700" @click="openBigRocks">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <button class="text-iceberg hover:text-blue-700" aria-label="最重要事項を編集" title="最重要事項を編集" @click="openBigRocks">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                   <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                 </svg>
               </button>
@@ -762,371 +911,367 @@ onMounted(() => {
               </div>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
-    </div>
+    </main>
 
     <!-- Quick Capture Modal -->
-    <div v-show="showQuickCaptureModal" class="fixed inset-0 bg-black bg-opacity-50 z-50">
-      <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg p-6 w-full max-w-lg border-2 border-caramel shadow-xl">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">
-            新しいタスクを追加 <span class="text-sm font-normal text-gray-600">(Add New Task)</span>
-          </h3>
-          <form @submit.prevent="handleQuickCapture">
-            <input
-              id="taskInput"
-              v-model="taskInput"
-              type="text"
-              placeholder="何をする必要がありますか？"
-              class="w-full px-4 py-3 border-2 border-iceberg rounded-lg focus:outline-none focus:ring-2 focus:ring-iceberg focus:border-transparent text-lg mb-6"
-              autocomplete="off"
+    <dialog ref="quickCaptureDialog" class="bg-white rounded-lg p-6 w-full max-w-lg border-2 border-caramel shadow-xl m-auto" aria-labelledby="quick-capture-title">
+      <h2 id="quick-capture-title" class="text-lg font-semibold text-gray-900 mb-4">
+        新しいタスクを追加 <span class="text-sm font-normal text-gray-600">(Add New Task)</span>
+      </h2>
+      <form @submit.prevent="handleQuickCapture">
+        <label for="taskInput" class="absolute -top-px -left-px w-px h-px overflow-hidden whitespace-nowrap">タスクの内容を入力してください</label>
+        <input
+          id="taskInput"
+          v-model="taskInput"
+          type="text"
+          placeholder="何をする必要がありますか？"
+          class="w-full px-4 py-3 border-2 border-iceberg rounded-lg focus:outline-none focus:ring-2 focus:ring-iceberg focus:border-transparent text-lg mb-6"
+          autocomplete="off"
+          aria-describedby="priority-instructions"
+          required
+        >
+
+        <!-- Priority Selection -->
+        <div class="mb-8">
+          <p id="priority-instructions" class="text-sm text-gray-600 mb-3">
+            このタスクを分類しましょう：
+          </p>
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              class="priority-toggle flex items-center justify-center py-3 px-4 border-2 rounded-lg transition-all duration-200" :class="[
+                captureImportant ? 'border-iceberg bg-iceberg text-white' : 'border-gray-200 hover:border-iceberg',
+              ]"
+              @click="toggleImportantCapture"
             >
-
-            <!-- Priority Selection -->
-            <div class="mb-8">
-              <p class="text-sm text-gray-600 mb-3">
-                このタスクを分類しましょう：
-              </p>
-              <div class="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  class="priority-toggle flex items-center justify-center py-3 px-4 border-2 rounded-lg transition-all duration-200" :class="[
-                    captureImportant ? 'border-iceberg bg-iceberg text-white' : 'border-gray-200 hover:border-iceberg',
-                  ]"
-                  @click="toggleImportantCapture"
-                >
-                  <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <span class="font-medium">重要</span>
-                </button>
-                <button
-                  type="button"
-                  class="priority-toggle flex items-center justify-center py-3 px-4 border-2 rounded-lg transition-all duration-200" :class="[
-                    captureUrgent ? 'border-tomato bg-tomato text-white' : 'border-gray-200 hover:border-tomato',
-                  ]"
-                  @click="toggleUrgentCapture"
-                >
-                  <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="font-medium">緊急</span>
-                </button>
-              </div>
-              <div v-show="captureImportant || captureUrgent" class="mt-3 p-3 rounded-lg bg-gray-50">
-                <div class="flex items-center">
-                  <div
-                    class="w-4 h-4 rounded mr-2" :class="[
-                      getQuadrant(captureImportant, captureUrgent) === 'do' ? 'bg-tomato'
-                      : getQuadrant(captureImportant, captureUrgent) === 'plan' ? 'bg-iceberg'
-                        : getQuadrant(captureImportant, captureUrgent) === 'delegate' ? 'bg-caramel'
-                          : 'bg-gray-400',
-                    ]"
-                  />
-                  <span class="text-sm font-medium">
-                    {{ getQuadrant(captureImportant, captureUrgent) === 'do' ? 'Do - Important & Urgent'
-                      : getQuadrant(captureImportant, captureUrgent) === 'plan' ? 'Plan - Important Only'
-                        : getQuadrant(captureImportant, captureUrgent) === 'delegate' ? 'Delegate - Urgent Only'
-                          : 'Eliminate - Neither Important nor Urgent' }}
-                  </span>
-                </div>
-                <p class="text-xs text-gray-600 mt-1">
-                  {{ getQuadrant(captureImportant, captureUrgent) === 'do' ? 'Handle immediately - crisis or emergency'
-                    : getQuadrant(captureImportant, captureUrgent) === 'plan' ? 'Schedule for later - prevents future crises'
-                      : getQuadrant(captureImportant, captureUrgent) === 'delegate' ? 'Let someone else handle this'
-                        : 'Consider if this task is necessary' }}
-                </p>
-              </div>
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              <span class="font-medium">重要</span>
+            </button>
+            <button
+              type="button"
+              class="priority-toggle flex items-center justify-center py-3 px-4 border-2 rounded-lg transition-all duration-200" :class="[
+                captureUrgent ? 'border-tomato bg-tomato text-white' : 'border-gray-200 hover:border-tomato',
+              ]"
+              @click="toggleUrgentCapture"
+            >
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+              <span class="font-medium">緊急</span>
+            </button>
+          </div>
+          <div v-show="captureImportant || captureUrgent" class="mt-3 p-3 rounded-lg bg-gray-50">
+            <div class="flex items-center">
+              <div
+                class="w-4 h-4 rounded mr-2" :class="[
+                  getQuadrant(captureImportant, captureUrgent) === 'do' ? 'bg-tomato'
+                  : getQuadrant(captureImportant, captureUrgent) === 'plan' ? 'bg-iceberg'
+                    : getQuadrant(captureImportant, captureUrgent) === 'delegate' ? 'bg-caramel'
+                      : 'bg-gray-400',
+                ]"
+              />
+              <span class="text-sm font-medium">
+                {{ getQuadrant(captureImportant, captureUrgent) === 'do' ? 'Do - Important & Urgent'
+                  : getQuadrant(captureImportant, captureUrgent) === 'plan' ? 'Plan - Important Only'
+                    : getQuadrant(captureImportant, captureUrgent) === 'delegate' ? 'Delegate - Urgent Only'
+                      : 'Eliminate - Neither Important nor Urgent' }}
+              </span>
             </div>
-
-            <div class="flex justify-end space-x-3">
-              <button
-                type="button"
-                class="px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center space-x-1"
-                @click="closeQuickCapture"
-              >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
-                <span>キャンセル</span>
-              </button>
-              <button
-                type="submit"
-                class="px-6 py-2 bg-iceberg hover:bg-blue-600 text-white rounded-lg font-medium flex items-center space-x-1"
-              >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                </svg>
-                <span>タスク追加</span>
-              </button>
-            </div>
-          </form>
+            <p class="text-xs text-gray-600 mt-1">
+              {{ getQuadrant(captureImportant, captureUrgent) === 'do' ? 'Handle immediately - crisis or emergency'
+                : getQuadrant(captureImportant, captureUrgent) === 'plan' ? 'Schedule for later - prevents future crises'
+                  : getQuadrant(captureImportant, captureUrgent) === 'delegate' ? 'Let someone else handle this'
+                    : 'Consider if this task is necessary' }}
+            </p>
+          </div>
         </div>
-      </div>
-    </div>
+
+        <div class="flex justify-end space-x-3">
+          <button
+            type="button"
+            class="px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center space-x-1"
+            @click="closeQuickCapture"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+            <span>キャンセル</span>
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 bg-iceberg hover:bg-blue-600 text-white rounded-lg font-medium flex items-center space-x-1"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            <span>タスク追加</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
 
     <!-- Big Rocks Modal -->
-    <div v-show="showBigRocksModal" class="fixed inset-0 bg-black bg-opacity-50 z-50">
-      <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg p-6 w-full max-w-2xl border-2 border-caramel max-h-[90vh] overflow-y-auto">
-          <h3 class="text-xl font-semibold text-gray-900 mb-6">
-            週間最重要事項の設定 <span class="text-base font-normal text-gray-600">(Big Rocks Planner)</span>
-          </h3>
-          <form @submit="handleBigRocks">
-            <div class="space-y-6">
-              <div
-                v-for="role in [
-                  { key: 'work', label: '仕事', labelEn: 'Work' },
-                  { key: 'family', label: '家族', labelEn: 'Family' },
-                  { key: 'health', label: '健康', labelEn: 'Health' },
-                  { key: 'personal', label: '個人', labelEn: 'Personal' },
-                ]" :key="role.key" class="role-section"
+    <dialog ref="bigRocksDialog" class="bg-white rounded-lg p-6 w-full max-w-2xl border-2 border-caramel max-h-[90vh] overflow-y-auto m-auto" aria-labelledby="big-rocks-title">
+      <h2 id="big-rocks-title" class="text-xl font-semibold text-gray-900 mb-6">
+        週間最重要事項の設定 <span class="text-base font-normal text-gray-600">(Big Rocks Planner)</span>
+      </h2>
+      <form @submit="handleBigRocks">
+        <div class="space-y-6">
+          <div
+            v-for="role in [
+              { key: 'work', label: '仕事', labelEn: 'Work' },
+              { key: 'family', label: '家族', labelEn: 'Family' },
+              { key: 'health', label: '健康', labelEn: 'Health' },
+              { key: 'personal', label: '個人', labelEn: 'Personal' },
+            ]" :key="role.key" class="role-section"
+          >
+            <h3 class="font-semibold text-iceberg mb-3">
+              {{ role.label }} <span class="text-sm font-normal text-gray-600">({{ role.labelEn }})</span>
+            </h3>
+            <div class="space-y-2">
+              <input
+                v-for="i in 3"
+                :id="`${role.key}-${i - 1}`"
+                :key="i"
+                :name="`${role.key}-${i - 1}`"
+                type="text"
+                :placeholder="`最重要事項 ${i}`"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                :value="bigRocks[role.key]?.[i - 1] || ''"
+                :aria-label="`${role.label}の最重要事項 ${i}`"
               >
-                <h4 class="font-semibold text-iceberg mb-3">
-                  {{ role.label }} <span class="text-sm font-normal text-gray-600">({{ role.labelEn }})</span>
-                </h4>
-                <div class="space-y-2">
-                  <input
-                    v-for="i in 3"
-                    :key="i"
-                    :name="`${role.key}-${i - 1}`"
-                    type="text"
-                    :placeholder="`最重要事項 ${i}`"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    :value="bigRocks[role.key]?.[i - 1] || ''"
-                  >
-                </div>
-              </div>
             </div>
-            <div class="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                class="px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center space-x-1"
-                @click="closeBigRocks"
-              >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
-                <span>キャンセル</span>
-              </button>
-              <button
-                type="submit"
-                class="px-6 py-2 bg-iceberg hover:bg-blue-600 text-white rounded-lg font-medium flex items-center space-x-1"
-              >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd" />
-                </svg>
-                <span>最重要事項を保存</span>
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
-      </div>
-    </div>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            type="button"
+            class="px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center space-x-1"
+            @click="closeBigRocks"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+            <span>キャンセル</span>
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 bg-iceberg hover:bg-blue-600 text-white rounded-lg font-medium flex items-center space-x-1"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd" />
+            </svg>
+            <span>最重要事項を保存</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
 
     <!-- Onboarding Modal -->
-    <div v-show="showOnboardingModal" class="fixed inset-0 bg-black bg-opacity-60 z-50">
-      <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-xl p-8 w-full max-w-3xl shadow-2xl">
-          <!-- Step 1 -->
-          <div v-show="currentOnboardingStep === 1" class="onboarding-step">
-            <div class="text-center mb-8">
-              <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-iceberg to-blue-500 rounded-full flex items-center justify-center">
-                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
-                </svg>
-              </div>
-              <h2 class="text-2xl font-bold text-gray-900 mb-2">
-                Covey Todo へようこそ！ 🎉
-              </h2>
-              <p class="text-gray-600">
-                実証済みの時間管理システムを 60 秒で学びましょう
-              </p>
-            </div>
-
-            <div class="bg-gradient-to-r from-red-50 to-blue-50 rounded-lg p-6 mb-6">
-              <h3 class="text-lg font-semibold mb-4">
-                重要度・緊急度マトリックス (Covey Matrix)
-              </h3>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="bg-red-100 border border-red-200 rounded-lg p-4">
-                  <div class="flex items-center mb-2">
-                    <div class="w-6 h-6 bg-tomato rounded flex items-center justify-center mr-3">
-                      <span class="text-white text-sm font-bold">1</span>
-                    </div>
-                    <span class="font-semibold text-red-900">今すぐやる</span>
-                  </div>
-                  <p class="text-sm text-red-700">
-                    重要 & 緊急<br>危機、緊急事態
-                  </p>
-                </div>
-                <div class="bg-blue-100 border border-blue-200 rounded-lg p-4">
-                  <div class="flex items-center mb-2">
-                    <div class="w-6 h-6 bg-iceberg rounded flex items-center justify-center mr-3">
-                      <span class="text-white text-sm font-bold">2</span>
-                    </div>
-                    <span class="font-semibold text-blue-900">計画する</span>
-                  </div>
-                  <p class="text-sm text-blue-700">
-                    重要のみ<br>予防、計画
-                  </p>
-                </div>
-                <div class="bg-yellow-100 border border-yellow-200 rounded-lg p-4">
-                  <div class="flex items-center mb-2">
-                    <div class="w-6 h-6 bg-caramel rounded flex items-center justify-center mr-3">
-                      <span class="text-gray-800 text-sm font-bold">3</span>
-                    </div>
-                    <span class="font-semibold text-yellow-900">人に任せる</span>
-                  </div>
-                  <p class="text-sm text-yellow-700">
-                    緊急のみ<br>割り込み、妨害
-                  </p>
-                </div>
-                <div class="bg-gray-100 border border-gray-200 rounded-lg p-4">
-                  <div class="flex items-center mb-2">
-                    <div class="w-6 h-6 bg-gray-400 rounded flex items-center justify-center mr-3">
-                      <span class="text-white text-sm font-bold">4</span>
-                    </div>
-                    <span class="font-semibold text-gray-700">やらない</span>
-                  </div>
-                  <p class="text-sm text-gray-600">
-                    どちらでもない<br>時間の無駄、些末
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex justify-center">
-              <button
-                class="bg-iceberg hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold"
-                @click="nextOnboardingStep"
-              >
-                わかりました！使い方を教えてください →
-              </button>
-            </div>
+    <dialog ref="onboardingDialog" class="bg-white rounded-xl p-8 w-full max-w-3xl shadow-2xl m-auto" aria-labelledby="onboarding-title">
+      <!-- Step 1 -->
+      <div v-show="currentOnboardingStep === 1" class="onboarding-step">
+        <div class="text-center mb-8">
+          <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-iceberg to-blue-500 rounded-full flex items-center justify-center">
+            <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+            </svg>
           </div>
+          <h2 id="onboarding-title" class="text-2xl font-bold text-gray-900 mb-2">
+            Covey Todo へようこそ！ 🎉
+          </h2>
+          <p class="text-gray-600">
+            実証済みの時間管理システムを 60 秒で学びましょう
+          </p>
+        </div>
 
-          <!-- Step 2 -->
-          <div v-show="currentOnboardingStep === 2" class="onboarding-step">
-            <div class="text-center mb-8">
-              <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-tomato to-iceberg rounded-full flex items-center justify-center">
-                <span class="text-white text-2xl">✨</span>
-              </div>
-              <h2 class="text-xl font-bold text-gray-900 mb-2">
-                試してみましょう！
-              </h2>
-              <p class="text-gray-600">
-                最初のタスクを追加して、魔法を体験してください
-              </p>
-            </div>
-
-            <div class="bg-blue-50 rounded-lg p-6 mb-6">
-              <div class="flex items-start space-x-4">
-                <div class="w-8 h-8 bg-iceberg rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+        <div class="bg-gradient-to-r from-red-50 to-blue-50 rounded-lg p-6 mb-6">
+          <h3 class="text-lg font-semibold mb-4">
+            重要度・緊急度マトリックス (Covey Matrix)
+          </h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-red-100 border border-red-200 rounded-lg p-4">
+              <div class="flex items-center mb-2">
+                <div class="w-6 h-6 bg-tomato rounded flex items-center justify-center mr-3">
                   <span class="text-white text-sm font-bold">1</span>
                 </div>
-                <div>
-                  <h4 class="font-semibold text-gray-900 mb-2">
-                    やるべきタスクを思い浮かべてください
-                  </h4>
-                  <p class="text-sm text-gray-600 mb-4">
-                    例：「月曜日の会議用プレゼン資料を作る」
-                  </p>
-                  <div class="bg-white rounded-lg p-4 border-2 border-dashed border-gray-300">
-                    <div class="flex items-center space-x-3">
-                      <input
-                        v-model="tutorialTaskInput"
-                        type="text"
-                        placeholder="ここにタスクを入力..."
-                        class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-iceberg"
-                      >
-                      <button
-                        class="bg-iceberg text-white px-4 py-2 rounded font-medium"
-                        @click="addTutorialTask"
-                      >
-                        追加
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <span class="font-semibold text-red-900">今すぐやる</span>
               </div>
-            </div>
-
-            <div class="flex justify-between">
-              <button class="text-gray-500 hover:text-gray-700" @click="prevOnboardingStep">
-                ← 戻る
-              </button>
-              <button class="text-gray-500 hover:text-gray-700" @click="finishOnboarding">
-                チュートリアルをスキップ
-              </button>
-            </div>
-          </div>
-
-          <!-- Step 3 -->
-          <div v-show="currentOnboardingStep === 3" class="onboarding-step">
-            <div class="text-center mb-8">
-              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                <span class="text-green-600 text-2xl">🎯</span>
-              </div>
-              <h2 class="text-xl font-bold text-gray-900 mb-2">
-                素晴らしい！準備が整いました
-              </h2>
-              <p class="text-gray-600">
-                覚えておきたい主要機能：
+              <p class="text-sm text-red-700">
+                重要 & 緊急<br>危機、緊急事態
               </p>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <div class="bg-gray-50 rounded-lg p-4">
-                <div class="flex items-center mb-2">
-                  <span class="text-2xl mr-3">⚡</span>
-                  <span class="font-semibold">簡単追加</span>
+            <div class="bg-blue-100 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-center mb-2">
+                <div class="w-6 h-6 bg-iceberg rounded flex items-center justify-center mr-3">
+                  <span class="text-white text-sm font-bold">2</span>
                 </div>
-                <p class="text-sm text-gray-600">
-                  <kbd class="px-2 py-1 bg-gray-200 rounded text-xs">N</kbd>キーまたは＋ボタンで簡単にタスク追加
-                </p>
+                <span class="font-semibold text-blue-900">計画する</span>
               </div>
-              <div class="bg-gray-50 rounded-lg p-4">
-                <div class="flex items-center mb-2">
-                  <span class="text-2xl mr-3">📊</span>
-                  <span class="font-semibold">今日ビュー</span>
-                </div>
-                <p class="text-sm text-gray-600">
-                  今日最も大切なことに集中
-                </p>
-              </div>
-              <div class="bg-gray-50 rounded-lg p-4">
-                <div class="flex items-center mb-2">
-                  <span class="text-2xl mr-3">🎯</span>
-                  <span class="font-semibold">領域</span>
-                </div>
-                <p class="text-sm text-gray-600">
-                  今すぐやる/計画する/人に任せる/やらないで切り替え
-                </p>
-              </div>
-              <div class="bg-gray-50 rounded-lg p-4">
-                <div class="flex items-center mb-2">
-                  <span class="text-2xl mr-3">🏔️</span>
-                  <span class="font-semibold">重要な取り組み</span>
-                </div>
-                <p class="text-sm text-gray-600">
-                  役割ごとに週間優先事項を設定
-                </p>
-              </div>
+              <p class="text-sm text-blue-700">
+                重要のみ<br>予防、計画
+              </p>
             </div>
-
-            <div class="text-center">
-              <button
-                class="bg-gradient-to-r from-tomato to-iceberg hover:from-red-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-200"
-                @click="finishOnboarding"
-              >
-                さあ、生産性を向上させましょう！ 🚀
-              </button>
+            <div class="bg-yellow-100 border border-yellow-200 rounded-lg p-4">
+              <div class="flex items-center mb-2">
+                <div class="w-6 h-6 bg-caramel rounded flex items-center justify-center mr-3">
+                  <span class="text-gray-800 text-sm font-bold">3</span>
+                </div>
+                <span class="font-semibold text-yellow-900">人に任せる</span>
+              </div>
+              <p class="text-sm text-yellow-700">
+                緊急のみ<br>割り込み、妨害
+              </p>
+            </div>
+            <div class="bg-gray-100 border border-gray-200 rounded-lg p-4">
+              <div class="flex items-center mb-2">
+                <div class="w-6 h-6 bg-gray-400 rounded flex items-center justify-center mr-3">
+                  <span class="text-white text-sm font-bold">4</span>
+                </div>
+                <span class="font-semibold text-gray-700">やらない</span>
+              </div>
+              <p class="text-sm text-gray-600">
+                どちらでもない<br>時間の無駄、些末
+              </p>
             </div>
           </div>
         </div>
+
+        <div class="flex justify-center">
+          <button
+            class="bg-iceberg hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold"
+            @click="nextOnboardingStep"
+          >
+            わかりました！使い方を教えてください →
+          </button>
+        </div>
       </div>
-    </div>
+
+      <!-- Step 2 -->
+      <div v-show="currentOnboardingStep === 2" class="onboarding-step">
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-tomato to-iceberg rounded-full flex items-center justify-center">
+            <span class="text-white text-2xl">✨</span>
+          </div>
+          <h2 class="text-xl font-bold text-gray-900 mb-2">
+            試してみましょう！
+          </h2>
+          <p class="text-gray-600">
+            最初のタスクを追加して、魔法を体験してください
+          </p>
+        </div>
+
+        <div class="bg-blue-50 rounded-lg p-6 mb-6">
+          <div class="flex items-start space-x-4">
+            <div class="w-8 h-8 bg-iceberg rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+              <span class="text-white text-sm font-bold">1</span>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-2">
+                やるべきタスクを思い浮かべてください
+              </h3>
+              <p class="text-sm text-gray-600 mb-4">
+                例：「月曜日の会議用プレゼン資料を作る」
+              </p>
+              <div class="bg-white rounded-lg p-4 border-2 border-dashed border-gray-300">
+                <div class="flex items-center space-x-3">
+                  <label for="tutorialTaskInput" class="absolute -top-px -left-px w-px h-px overflow-hidden whitespace-nowrap">チュートリアル用タスク入力</label>
+                  <input
+                    id="tutorialTaskInput"
+                    v-model="tutorialTaskInput"
+                    type="text"
+                    placeholder="ここにタスクを入力..."
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-iceberg"
+                    aria-label="チュートリアル用タスク入力"
+                  >
+                  <button
+                    class="bg-iceberg text-white px-4 py-2 rounded font-medium"
+                    @click="addTutorialTask"
+                  >
+                    追加
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between">
+          <button class="text-gray-500 hover:text-gray-700" @click="prevOnboardingStep">
+            ← 戻る
+          </button>
+          <button class="text-gray-500 hover:text-gray-700" @click="finishOnboarding">
+            チュートリアルをスキップ
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div v-show="currentOnboardingStep === 3" class="onboarding-step">
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+            <span class="text-green-600 text-2xl">🎯</span>
+          </div>
+          <h2 class="text-xl font-bold text-gray-900 mb-2">
+            素晴らしい！準備が整いました
+          </h2>
+          <p class="text-gray-600">
+            覚えておきたい主要機能：
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center mb-2">
+              <span class="text-2xl mr-3">⚡</span>
+              <span class="font-semibold">簡単追加</span>
+            </div>
+            <p class="text-sm text-gray-600">
+              <kbd class="px-2 py-1 bg-gray-200 rounded text-xs">N</kbd>キーまたは＋ボタンで簡単にタスク追加
+            </p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center mb-2">
+              <span class="text-2xl mr-3">📊</span>
+              <span class="font-semibold">今日ビュー</span>
+            </div>
+            <p class="text-sm text-gray-600">
+              今日最も大切なことに集中
+            </p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center mb-2">
+              <span class="text-2xl mr-3">🎯</span>
+              <span class="font-semibold">領域</span>
+            </div>
+            <p class="text-sm text-gray-600">
+              今すぐやる/計画する/人に任せる/やらないで切り替え
+            </p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center mb-2">
+              <span class="text-2xl mr-3">🏔️</span>
+              <span class="font-semibold">重要な取り組み</span>
+            </div>
+            <p class="text-sm text-gray-600">
+              役割ごとに週間優先事項を設定
+            </p>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <button
+            class="bg-gradient-to-r from-tomato to-iceberg hover:from-red-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+            @click="finishOnboarding"
+          >
+            さあ、生産性を向上させましょう！ 🚀
+          </button>
+        </div>
+      </div>
+    </dialog>
   </div>
 </template>
