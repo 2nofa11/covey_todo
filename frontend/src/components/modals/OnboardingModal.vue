@@ -42,16 +42,6 @@ function finishOnboarding() {
   modal.close()
 }
 
-function resetOnboarding() {
-  currentStep.value = 1
-  tutorialTaskInput.value = ''
-}
-
-function _handleClose() {
-  resetOnboarding()
-  modal.close()
-}
-
 onMounted(() => {
   if (props.autoShow) {
     const onboarded = localStorage.getItem('coveyOnboarded')
