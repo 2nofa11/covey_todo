@@ -243,4 +243,50 @@ describe('useTaskStats', () => {
 
     expect(stats.value.highPriority).toBe(1) // Only uncompleted high priority tasks
   })
+
+  it('exports all necessary functions and values', () => {
+    const tasksRef = ref<Task[]>([])
+    const result = useTaskStats(tasksRef)
+
+    expect(result).toHaveProperty('stats')
+    expect(result).toHaveProperty('completionRate')
+    expect(result).toHaveProperty('todayProgress')
+    expect(result).toHaveProperty('quadrantStats')
+    expect(result).toHaveProperty('quadrantRatios')
+    expect(result).toHaveProperty('urgentDependency')
+    expect(result).toHaveProperty('q2Color')
+    expect(result).toHaveProperty('urgentColor')
+    expect(result).toHaveProperty('overallCompletionRate')
+    expect(result).toHaveProperty('weeklyProgress')
+    expect(result).toHaveProperty('isToday')
+  })
+
+  it('calculates quadrant ratios correctly', () => {
+    const tasks = ref<Task[]>([
+      createMockTask({ important: true, urgent: true }), // do
+      createMockTask({ important: true, urgent: false }), // plan
+      createMockTask({ important: false, urgent: true }), // delegate
+      createMockTask({ important: false, urgent: false }), // eliminate
+    ])
+    const { quadrantRatios } = useTaskStats(tasks)
+
+    expect(quadrantRatios.value.do).toBe(25)
+    expect(quadrantRatios.value.plan).toBe(25)
+    expect(quadrantRatios.value.delegate).toBe(25)
+    expect(quadrantRatios.value.eliminate).toBe(25)
+  })
+
+  it('calculates urgent dependency and colors correctly', () => {
+    const tasks = ref<Task[]>([
+      createMockTask({ important: true, urgent: true, completed: false }), // 緊急・重要
+      createMockTask({ important: true, urgent: false, completed: false }), // 重要のみ
+      createMockTask({ important: false, urgent: true, completed: false }), // 緊急のみ
+      createMockTask({ important: false, urgent: false, completed: false }), // どちらでもない
+    ])
+    const { urgentDependency, q2Color, urgentColor } = useTaskStats(tasks)
+
+    expect(urgentDependency.value).toBe(50) // 緊急タスク 2/4 = 50%
+    expect(q2Color.value).toBe('bg-red-400') // 25% なので赤色（30%未満）
+    expect(urgentColor.value).toBe('bg-yellow-400') // 50% なので黄色
+  })
 })
