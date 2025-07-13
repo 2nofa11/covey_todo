@@ -1,9 +1,10 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useTodoStore } from './useTodoStore'
+import type { Task } from '@/types'
 
 // VueUseのuseLocalStorageをモック - 実際のref動作を模倣
-const mockTasks = vi.fn(() => [])
+const mockTasks = vi.fn(() => [] as Task[])
 vi.mock('@vueuse/core', () => ({
   useLocalStorage: vi.fn(() => ({
     value: mockTasks(),
@@ -78,7 +79,7 @@ describe('useTodoStore', () => {
   describe('addTask', () => {
     it('creates a task with correct properties', () => {
       // Mock task storage array
-      const tasksArray: any[] = []
+      const tasksArray: Task[] = []
       mockTasks.mockReturnValue(tasksArray)
 
       const store = useTodoStore()
@@ -134,7 +135,7 @@ describe('useTodoStore', () => {
         createdAt: new Date().toISOString(),
       }
 
-      const tasksArray = [task]
+      const tasksArray: Task[] = [task]
       mockTasks.mockReturnValue(tasksArray)
 
       const store = useTodoStore()
@@ -155,7 +156,7 @@ describe('useTodoStore', () => {
         completedAt: new Date().toISOString(),
       }
 
-      const tasksArray = [task]
+      const tasksArray: Task[] = [task]
       mockTasks.mockReturnValue(tasksArray)
 
       const store = useTodoStore()
@@ -183,7 +184,7 @@ describe('useTodoStore', () => {
         createdAt: new Date().toISOString(),
       }
 
-      const tasksArray = [task]
+      const tasksArray: Task[] = [task]
       mockTasks.mockReturnValue(tasksArray)
 
       const store = useTodoStore()
@@ -202,7 +203,7 @@ describe('useTodoStore', () => {
         createdAt: new Date().toISOString(),
       }
 
-      const tasksArray = [task]
+      const tasksArray: Task[] = [task]
       mockTasks.mockReturnValue(tasksArray)
 
       const store = useTodoStore()
@@ -229,7 +230,7 @@ describe('useTodoStore', () => {
         createdAt: new Date().toISOString(),
       }
 
-      const tasksArray = [task]
+      const tasksArray: Task[] = [task]
       mockTasks.mockReturnValue(tasksArray)
 
       const store = useTodoStore()
@@ -248,7 +249,7 @@ describe('useTodoStore', () => {
         createdAt: new Date().toISOString(),
       }
 
-      const tasksArray = [task]
+      const tasksArray: Task[] = [task]
       mockTasks.mockReturnValue(tasksArray)
 
       const store = useTodoStore()
@@ -275,7 +276,7 @@ describe('useTodoStore', () => {
         createdAt: new Date().toISOString(),
       }
 
-      const tasksArray = [task]
+      const tasksArray: Task[] = [task]
       mockTasks.mockReturnValue(tasksArray)
 
       const store = useTodoStore()
@@ -311,7 +312,7 @@ describe('useTodoStore', () => {
         createdAt: new Date().toISOString(),
       }
 
-      const tasksArray = [task1, task2]
+      const tasksArray: Task[] = [task1, task2]
       mockTasks.mockReturnValue(tasksArray)
 
       const store = useTodoStore()
@@ -321,7 +322,7 @@ describe('useTodoStore', () => {
       store.toggleImportant(2)
 
       expect(task1.completed).toBe(true)
-      expect(task1.completedAt).toBeDefined()
+      expect('completedAt' in task1).toBe(true)
       expect(task2.important).toBe(true)
     })
 
