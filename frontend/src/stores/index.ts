@@ -1,5 +1,5 @@
-import { createPinia } from 'pinia'
 import { PiniaColada } from '@pinia/colada'
+import { createPinia } from 'pinia'
 
 const pinia = createPinia()
 pinia.use(PiniaColada)

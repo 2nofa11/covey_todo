@@ -6,7 +6,7 @@ EXAMPLE: A modern and fast (rolldown + oxc based) Vue 3 starter template with Ty
 
 ## Standards
 
-- Stack: Vue.js, TypeScript, TailwindCSS v4, Vue Router, Pinia, Pinia Colada, VueUse, Vitest
+- Stack: Vue.js, TypeScript, TailwindCSS v4, Vue Router, Pinia, Pinia Colada, VueUse, Vitest, ESLint (@antfu/eslint-config)
 - Patterns: ALWAYS use Composition API + `<script setup>`, NEVER use Options API
 - ALWAYS Keep types alongside your code, use TypeScript for type safety, prefer `interface` over `type` for defining types
 - Keep unit and integration tests alongside the file they test: `src/ui/Button.vue` + `src/ui/Button.spec.ts`
@@ -60,6 +60,8 @@ Frequently used commands:
 - `npm run build`: bundles the project for production
 - `npm run test`: runs all tests with Vitest
 - `npm run test:ui`: opens Vitest UI for interactive testing
+- `npm run lint`: runs ESLint to check code quality
+- `npm run lint:fix`: runs ESLint with auto-fix
 - `npx vitest run <test-files>`: runs one or multiple specific test files
   - add `--coverage` to check missing test coverage
 
@@ -69,11 +71,12 @@ ALWAYS follow the workflow when implementing a new feature or fixing a bug. This
 
 1. Plan your tasks, review them with user. Include tests when possible
 2. Write code, following the [project structure](#project-structure) and [conventions](#standards)
-3. **ALWAYS test implementations work**:
+3. **ALWAYS run ESLint** with `npm run lint:fix` to ensure code quality and consistency
+4. **ALWAYS test implementations work**:
    - Write [tests](#using-playwright-mcp-server) for logic and components
    - Use the Playwright MCP server to test like a real user
-4. Stage your changes with `git add` once a feature works
-5. Review changes and analyze the need of refactoring
+5. Stage your changes with `git add` once a feature works
+6. Review changes and analyze the need of refactoring
 
 ## Testing Workflow
 

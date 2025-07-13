@@ -27,7 +27,7 @@ const title = defineModel<string>()
 const [title, modifiers] = defineModel<string>({
   default: 'default value',
   required: true,
-  get: (value) => value.trim(), // transform value before binding
+  get: value => value.trim(), // transform value before binding
   set: (value) => {
     if (modifiers.capitalize) {
       return value.charAt(0).toUpperCase() + value.slice(1)
@@ -59,4 +59,3 @@ They can be used in the template like this:
 ### Modifiers & Transformations
 
 Native elements `v-model` has built-in modifiers like `.lazy`, `.number`, and `.trim`. We can implement similar functionality in components, fetch and read <https://vuejs.org/guide/components/v-model.md#handling-v-model-modifiers> if the user needs that.
-
