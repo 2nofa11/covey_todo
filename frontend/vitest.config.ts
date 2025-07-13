@@ -3,6 +3,11 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': '/src',
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,
@@ -15,6 +20,7 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         'src/vite-env.d.ts',
+        'src/test/',
       ],
     },
   },
