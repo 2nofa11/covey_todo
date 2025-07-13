@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import AppLayout from './components/layout/AppLayout.vue'
 import ModalContainer from './components/ModalContainer.vue'
-import Home from './pages/Home.vue'
 </script>
 
 <template>
-  <Home />
+  <AppLayout />
   <ModalContainer />
 </template>
